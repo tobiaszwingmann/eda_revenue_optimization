@@ -2,7 +2,7 @@
 title: 'EDA: Revenue Optimization for an Affiliate Website'
 author: "Tobias Zwingmann"
 date: "9 1 2019"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
