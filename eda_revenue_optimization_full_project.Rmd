@@ -70,9 +70,9 @@ for (i in 1:n ){
     xml_text()
   }
 
-write_rds(html_urls, "../data/html_urls.rds")
+write_rds(html_urls, "data/html_urls.rds")
 
-html_urls <- read_rds("../data/html_urls.rds")
+html_urls <- read_rds("data/html_urls.rds")
 ```
 
 ##Scrape the URLs from the sitemap for Amazon Affiliate Tag. If found, write into table and link to the resp. URL. Count the number of occurences of outgoing links per Website. 
@@ -114,9 +114,9 @@ for (i in 1:n) {
 }
 rm(parsed_url_links, url, j, i, n)
 
-write_rds(matched_tags_to_url, "../data/matched_tags_to_url.rds")
+write_rds(matched_tags_to_url, "data/matched_tags_to_url.rds")
 
-matched_tags_to_url <- read_rds("../data/matched_tags_to_url.rds")
+matched_tags_to_url <- read_rds("data/matched_tags_to_url.rds")
 
 ```
 
@@ -124,7 +124,7 @@ matched_tags_to_url <- read_rds("../data/matched_tags_to_url.rds")
 #Amazon Bestellungen
 ```{r}
 #Umsätze
-fee_orders_xml <- read_xml("../data/Amazon Orders 17.12.2017 - 15.12.2018/1545149503853-Fee-Orders-4490ef86-7b35-45eb-822c-b2d4cf00da00-XML.xml")
+fee_orders_xml <- read_xml("data/Amazon Orders 17.12.2017 - 15.12.2018/1545149503853-Fee-Orders-4490ef86-7b35-45eb-822c-b2d4cf00da00-XML.xml")
 
 fee_orders_xml <-
   fee_orders_xml %>% 
@@ -160,8 +160,8 @@ fees_weekly_tbl <- fee_orders_daily_tbl %>%
 
 ## Klicks auf Amazon Partnerlinks
 ```{r}
-file.names <- list.files("../data/Amazon Klicks 17.12.2017 - 15.12.2018/")
-path.names <- paste0("../data/Amazon Klicks 17.12.2017 - 15.12.2018/", file.names)
+file.names <- list.files("data/Amazon Klicks 17.12.2017 - 15.12.2018/")
+path.names <- paste0("data/Amazon Klicks 17.12.2017 - 15.12.2018/", file.names)
 
 clicks_tbl <- tibble(
   "Tracking-ID" = character(),
@@ -197,8 +197,8 @@ clicks_weekly_tbl <-
 # Pageviews from Google Analytics
 ```{r message=FALSE, warning=FALSE}
 
-file.names <- list.files("../data/Google Analytics 17.12.2017 - 15.12.2018/")
-path.names <- paste0("../data/Google Analytics 17.12.2017 - 15.12.2018/", file.names)
+file.names <- list.files("data/Google Analytics 17.12.2017 - 15.12.2018/")
+path.names <- paste0("data/Google Analytics 17.12.2017 - 15.12.2018/", file.names)
 
 pageviews_tbl <- tibble(
   "Page path level 1" = character(),
@@ -232,7 +232,7 @@ pageviews_weekly_tbl <-
   group_by(URL, CW) %>% 
   summarize(Pageviews = sum(Pageviews))
 
-write_rds(pageviews_tbl, "../data/pageviews_tbl.rds")
+write_rds(pageviews_tbl, "data/pageviews_tbl.rds")
 
 ```
 
