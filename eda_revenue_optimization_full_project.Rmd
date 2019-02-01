@@ -11,6 +11,8 @@ library("rvest")
 library("tidyverse")
 library("xml2")
 library("lubridate")
+library("scales") #0.4.0
+library("cluster") #2.0.4
 
 bind_pageview_csv_to_tbl <- function(path.names) {
   pageviews_tbl <- rbind(read_csv(path.names, 
@@ -43,9 +45,22 @@ bind_click_dates_csv_to_tbl <- function(path.names) {
 get_cw_and_year_from_date <- function(date){
   paste(year(date), 
                     if_else(
-                      week(date)<10, paste0("0",week(date)),as.character(week(date)) #CW 1 als CW 01 schreiben für Sortierung
+                      isoweek(date)<10, paste0("0",isoweek(date)),as.character(isoweek(date)) #CW 1 als CW 01 schreiben für Sortierung
                       ), sep="-")
 }
+
+hampel.proc <- function(x, t = 3, RemoveNAs = FALSE){
+  #
+  #  This procedure returns an index of x values declared
+  #  outliers according to the Hampel detection rule, if any
+  #
+  mu <- median(x, na.rm = RemoveNAs)
+  sig <- mad(x, na.rm = RemoveNAs)
+  indx <- which( abs(x - mu) > t*sig)
+  #
+  indx
+}
+mav <- function(x,n=5){filter(x,rep(1/n,n), sides=2)}
 ```
 
 #Match Website-URLs with Amazon Affiliate Tracking IDs
@@ -140,7 +155,7 @@ matched_tags_to_url <- read_rds("data/matched_tags_to_url.rds")
 # Umsätze (Orders) von Amazon
 ```{r}
 #Umsätze
-fee_orders_xml <- read_xml("data/Amazon Orders 17.12.2017 - 15.12.2018/1545149503853-Fee-Orders-4490ef86-7b35-45eb-822c-b2d4cf00da00-XML.xml")
+fee_orders_xml <- read_xml("data/Amazon Orders 18.12.2017 - 16.12.2018/1549029224178-Fee-Orders-7a68a8a6-7342-4f73-a750-3e26a56c5147-XML.xml")
 
 fee_orders_xml <-
   fee_orders_xml %>% 
@@ -176,8 +191,8 @@ fees_weekly_tbl <- fee_orders_daily_tbl %>%
 
 ## Klicks auf Amazon Partnerlinks
 ```{r}
-file.names <- list.files("data/Amazon Klicks 17.12.2017 - 15.12.2018/")
-path.names <- paste0("data/Amazon Klicks 17.12.2017 - 15.12.2018/", file.names)
+file.names <- list.files("data/Amazon Klicks 18.12.2017 - 16.12.2018/")
+path.names <- paste0("data/Amazon Klicks 18.12.2017 - 16.12.2018/", file.names)
 
 clicks_tbl <- tibble(
   "Tracking-ID" = character(),
@@ -199,22 +214,33 @@ clicks_weekly_tbl <-
   select(-File) %>% 
   mutate(Start = mdy(Start),
          End = mdy(End),
-         CW = get_cw_and_year_from_date(Start)
+         CW = get_cw_and_year_from_date(Start),
+         CW_check = get_cw_and_year_from_date(End),
+         DaysInWeek = End - Start + 1
          )%>% 
-  arrange(CW) %>% 
-  rename(Tag = `Tracking-ID`) %>% 
-  group_by(Tag, CW) %>% 
-  summarise(Klicks = sum(Klicks))
+  arrange(CW) %>%
+  rename(Tag = `Tracking-ID`)
 
-#check with vauesfrom source files
+# Sanity Checks: Die einzelnen CSV-Files wurden manuell aus dem Amazon Partnernet generiert.
+# Hier wird geprüft, ob Start- und Enddatum des jeweiligen CSV-Files in der gleichen Kalenderwoche sind und ob
+# jede Kalenderwoche aus 7 Einzeltagen besteht.
+
+if (all(clicks_weekly_tbl$CW == clicks_weekly_tbl$CW_check) & all(clicks_weekly_tbl$DaysInWeek == 7)) {
+  clicks_weekly_tbl <- 
+    clicks_weekly_tbl %>% 
+    group_by(Tag, CW) %>% 
+    summarise(Klicks = sum(Klicks))
+} else {
+  print("Prüfe Rohdaten im Ordner Amazon Klicks")
+}
 ```
 
 
 # Pageviews from Google Analytics
 ```{r message=FALSE, warning=FALSE}
 
-file.names <- list.files("data/Google Analytics 17.12.2017 - 15.12.2018/")
-path.names <- paste0("data/Google Analytics 17.12.2017 - 15.12.2018/", file.names)
+file.names <- list.files("data/Google Analytics 01.12.2017 - 31.12.2018/")
+path.names <- paste0("data/Google Analytics 01.12.2017 - 31.12.2018/", file.names)
 
 pageviews_tbl <- tibble(
   "Page path level 1" = character(),
@@ -233,6 +259,7 @@ pageviews_tbl <- map_df(path.names, bind_pageview_csv_to_tbl)
 #Clean up data frame 
 pageviews_tbl <- pageviews_tbl %>% 
   filter(!is.na(`Page path level 1`)) %>% 
+  filter(!is.na(Date)) %>% 
   mutate(URL = str_remove(`Page path level 1`, "/$")) %>% #Entferne Slashes am Ende
   filter(str_detect(URL, "^/")) %>% 
   mutate(Pageviews = str_remove(Pageviews, ","),
@@ -253,21 +280,37 @@ pageviews_weekly_tbl <-
 ##Zusammenführen von Views, Klicks und Umsätzen in ein einheitliches Datenset
 ```{r}
 # Kleinster Granularitätsfaktor: Kalenderwoche Tag und URL
+date_range <- fees_weekly_tbl$CW %>% unique() %>% sort
 
-weekly_raw_tbl <- 
-  matched_tags_to_url %>%
+weekly_raw_tbl <-
+  expand(matched_tags_to_url, Tag, date_range ) %>%  #Basis Dataframe mit jeder Kombination aus Tag und CW in Daterange
+  rename(CW = date_range) %>% 
+  left_join(matched_tags_to_url) %>%
   mutate(URL = str_remove(URL, "/$")) %>% 
-  left_join(pageviews_weekly_tbl, by="URL") %>% 
+  left_join(pageviews_weekly_tbl, by=c("URL", "CW")) %>% 
   left_join(clicks_weekly_tbl, by=c("CW", "Tag")) %>% 
-  left_join(fees_weekly_tbl, by=c("CW", "Tag")) %>% 
-  mutate(Umsatz = replace_na(Umsatz, 0))
+  left_join(fees_weekly_tbl, by=c("CW", "Tag")) %>%
+  mutate(Pageviews = replace_na(Pageviews, 0),
+         Klicks = replace_na(Klicks, 0),
+         Umsatz = replace_na(Umsatz, 0)) %>% 
+  mutate(Umsatz = replace_na(Umsatz, 0)) %>% 
+  mutate(CTR = ifelse(Pageviews == 0, 0, round(Klicks / Pageviews,4))) %>% 
+  mutate(RPC = ifelse(Klicks == 0, 0, round(Umsatz / Klicks, 4)))
+
+
+write_rds(weekly_raw_tbl, "data/weekly_raw_tbl.rds")
 
 weekly_raw_tbl %>% 
   head()
+
 ```
 
 
 
+# Exploration
+```{r}
+
+```
 
 
 
