@@ -6,6 +6,7 @@ output: github_document
 ---
 
 ```{r setup, include=FALSE}
+
 knitr::opts_chunk$set(echo = TRUE)
 library("rvest")
 library("tidyverse")
@@ -63,6 +64,7 @@ hampel.proc <- function(x, t = 3, RemoveNAs = FALSE){
 }
 mav <- function(x,n=5){filter(x,rep(1/n,n), sides=2)}
 ```
+
 
 #Match Website-URLs with Amazon Affiliate Tracking IDs
 
@@ -323,41 +325,296 @@ weekly_raw_tbl %>%
 ## Wöchentliche Trends allgemein
 ### ... nach Seitenaufrufen
 ```{r}
+#Data Transformation
 weekly_raw_tbl %>% 
   select(CW, Pageviews) %>% 
   group_by(CW) %>% 
   summarise(Pageviews = sum(Pageviews)) %>%
-  figure(width=750, title="Entwicklung der wöchentlichen Seitenaufrufe im Zeitverlauf") %>% 
-  ly_lines(CW, Pageviews) %>% 
-  theme_axis("x", major_label_orientation = 90)
+  
+  #Visualisation
+  ggplot(aes(CW, Pageviews)) +
+  geom_line(group=1) +
+  ggtitle("Entwicklung der wöchentlichen Seitenaufrufe im Zeitverlauf") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  expand_limits(y=0)
+  
 ```
 
 ### ... nach Klicks
 ```{r}
+#Data Transformation
 weekly_raw_tbl %>% 
   select(CW, Klicks) %>% 
   group_by(CW) %>% 
   summarise(Klicks = sum(Klicks)) %>%
-  figure(width=750, title="Entwicklung der wöchentlichen Seitenaufrufe im Zeitverlauf") %>% 
-  ly_lines(CW, Pageviews) %>% 
-  theme_axis("x", major_label_orientation = 90)
+  
+  #Visualisation
+  ggplot(aes(CW, Klicks)) +
+  geom_line(group=1) +
+  ggtitle("Entwicklung der wöchentlichen Klicks im Zeitverlauf") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  expand_limits(y=0)
+  
+```
+
+### ... nach Umsätzen
+```{r}
+#Data Transformation
+weekly_raw_tbl %>% 
+  select(CW, Umsatz) %>% 
+  group_by(CW) %>% 
+  summarise(Umsatz = sum(Umsatz)) %>%
+  
+  #Visualisation
+  ggplot(aes(CW, Umsatz)) +
+  geom_line(group=1) +
+  ggtitle("Entwicklung der wöchentlichen Umsätze im Zeitverlauf") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  expand_limits(y=0)
+  
+```
+
+## Seitenaufrufe, Umsätze, Klicks in einem Chart
+Erkenntnis: Alle dre Variablen korrelieren miteinander, der Umsatz bricht aber nicht so stark ein, wie die anderen Werte (Klicks)
+```{r}
+weekly_raw_tbl %>% 
+  select(CW, Pageviews, Klicks, Umsatz) %>% 
+  group_by(CW) %>% 
+  summarise(Umsatz = sum(Umsatz),
+            Klicks = sum(Klicks),
+            Pageviews = sum(Pageviews)) %>%
+  ungroup() %>%
+  #Skaliere alle Werte zwischen 0 und 1
+  mutate(Umsatz = rescale(Umsatz,to=c(0,1)),
+         Klicks = rescale(Klicks, to=c(0, 1)),
+         Pageviews = rescale(Pageviews, to=c(0, 1))) %>%
+  gather(key = Kriterium, value = Wert, -CW) %>% 
+  
+  #Visualisation
+  ggplot(aes(x=CW, y=Wert, color=Kriterium)) +
+  geom_line(aes(group = Kriterium), size = 1.1) +
+  ggtitle("Entwicklung der wöchentlichen Seitenaufrufe, Klicks und Umsätze im Zeitverlauf") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = "bottom") +
+  expand_limits(y=0)
 ```
 
 
+#Analyse der Umsätze und Seitenaufrufe für Wochentage
+```{r}
+#Temporary Tables for Join
+a = pageviews_tbl %>% 
+  mutate(Wochentag = weekdays(ymd(Date))) %>% 
+  select(Wochentag, Pageviews) %>% 
+  group_by(Wochentag) %>% 
+  summarise(Pageviews = sum(Pageviews)) %>% 
+  mutate(Pageviews_perc = prop.table(Pageviews))
 
 
+b = fee_orders_daily_tbl %>%
+  ungroup() %>% 
+  mutate(Wochentag = weekdays(ymd(Datum))) %>% 
+  select(Wochentag, Umsatz) %>% 
+  group_by(Wochentag) %>% 
+  summarise(Umsatz = sum(Umsatz)) %>% 
+  mutate(Umsatz_perc = prop.table(Umsatz))
+
+#Data Transformation
+left_join(a, b, by="Wochentag") %>% 
+  select(Wochentag, Pageviews_perc, Umsatz_perc) %>% 
+  gather(key = Kriterium, value = Prozent, -Wochentag) %>%
+  mutate(Wochentag = fct_relevel(Wochentag,c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))) %>% 
+  
+  ggplot(aes(x=Wochentag, y=Prozent, fill=Kriterium)) +
+  geom_bar(position="dodge", stat="identity")
+  
+```
 
 
+## Analyse der Kennzahlen CTR und RPC
+
+Wir sind interessiert an einem Benchmark der Kennzahlen CTR und RPC. Die erste Frage: Gibt es innerhalb dieser Kennzahlen überhaupt Varianz und wenn ja wie stark ist diese ausgeprägt?
+
+### Verteilung der CTR insgesamt
+Einschränkung: Seitenaufrufe mindestens 50 (hier: pro Woche). Sonst keine verlässlichen Zahlen möglich.
+Es scheint mindestens 3 Peaks zu geben: um 0.18, 0.27 und unter 0.05.
+Erkenntnis: Ja, es existiert Varianz. Die CTR streut sogar relativ stark um den Mittelwert XXX. Wobei Mittelwert hier offensichtlich kein besonders gutes Lagemaß ist.
+```{r}
+CTR_mean <- weekly_raw_tbl %>% filter(Pageviews >= 50) %>% select(CTR) %>% unlist %>% mean
+
+weekly_raw_tbl %>%
+  filter(Pageviews >= 50) %>% 
+  select(CTR) %>%
+  ggplot(aes(x=CTR)) +
+  geom_histogram(binwidth = 0.01) + 
+  geom_vline(aes(xintercept=CTR_mean))
+```
+
+Schwankt der CTR in Abhängigkeit von der Zeit?
+Ergebnis: Nein, der CTR ist über die Zeit relativ konstant, hier scheint kein Muster vorzuliegen
+```{r}
+weekly_raw_tbl %>%
+  filter(Pageviews >= 50) %>% 
+  select(CTR, CW) %>%
+  ggplot(aes(y=CTR, x=CW)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+Vermutung: CTR variiert je nach Seiten-URL, also manche Seiten performen gut, andere weniger.
+Erkenntnis: Stimmt, der CTR schwankt stark nach Seiten-URL (Mittelwert 0.4 und 0.01). Die Sortierung der X-Achse hier erfolgt anhand der absteigenden Seitenaufrufe gesamt dieser Seiten-URL. Zwei Top-URLs haben katastrophale CTR-Werte
+```{r}
+tag_id_order <- weekly_raw_tbl %>%
+  filter(Pageviews >= 50) %>%
+  select(Tag, Pageviews) %>% 
+  group_by(Tag) %>% 
+  summarize(Pageviews = sum(Pageviews)) %>%
+  arrange(desc(Pageviews)) %>% 
+  select(Tag) %>% 
+  unlist
+
+weekly_raw_tbl %>%
+  arrange(desc(Pageviews)) %>% 
+  filter(Pageviews >= 50) %>% 
+  select(CTR, Tag) %>%
+  mutate(Tag = fct_relevel(Tag, tag_id_order)) %>% 
+  ggplot(aes(y=CTR, x=Tag)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+Wie verhält sich die CTR im Vergleich zu Seitenaufrufen? Schwankt die CTR in Abhängigkeit von den absoluten Seitenaufrufen?
+Zur Verdeutlichung schauen wir uns den direkten Zusammenhang zwischen Klicks und Pageviews an. Sollte die CTR konstant sein, müssten die Punkte durch eine Regressionsgerade verbunden werden können.
+
+Erkenntnis: Es existiert tatsächlich ein linearer Zusammenhang, je mehr Pageviews, desto mehr Klicks. Allerdings scheinen hier mindestens 2 Gruppen von Daten zu existieren, einige mit guter und einige mit schlechter Performance.
+
+Die Modellierung des CTR-Benchmarks sollte mindestens in Abhängigkeit der Pageviews durchgeführt werden.
+```{r}
+weekly_raw_tbl %>%
+  filter(Pageviews >= 50) %>% 
+  select(Klicks, Pageviews) %>%
+  ggplot(aes(y=Klicks, x=Pageviews)) +
+  geom_point()
+```
+
+Modellierungsversuch der o.g. Verteilung:
+
+```{r}
+clicks_lm <- lm(Klicks ~ Pageviews, data = weekly_raw_tbl)
+predicted_clicks <- data.frame(Klicks_Prediction = predict(clicks_lm, weekly_raw_tbl), Pageviews=weekly_raw_tbl$Pageviews)
+
+weekly_raw_tbl %>%
+  filter(Pageviews >= 50) %>% 
+  select(Klicks, Pageviews) %>%
+  ggplot(aes(y=Klicks, x=Pageviews)) +
+  geom_point() +
+  geom_line(data=predicted_clicks, aes(x=Pageviews, y=Klicks_Prediction), color="blue")
+
+```
+
+Qualität des Baseline-Modells:
+Schwache Resultate. Vor allem: Verlertzung der Annahme der Normalverteilung.
+```{r}
+summary(clicks_lm) #r2 0.594
+plot(clicks_lm, which=1)
+
+```
+
+Cluster-Analyse: Auflösung der zwei Sub-Gruppen
+
+```{r}
+ctr_df <- weekly_raw_tbl %>%
+  filter(Pageviews > 1) %>% 
+  select(Klicks, Pageviews, CTR, Tag) %>% 
+  mutate(Klicks_scaled = scale(Klicks),
+         Pageviews_scaled = scale(Pageviews))
+
+ctr_cluster_list <- kmeans(ctr_df %>% select(Pageviews_scaled, Klicks_scaled), 10, nstart=50)
+
+ctr_df$Cluster <- ctr_cluster_list$cluster
+
+ctr_df <- ctr_df %>% 
+  mutate(Cluster = as.factor(Cluster)) 
+
+ctr_df %>% 
+  ggplot(aes(x=Pageviews, y=Klicks, color=Cluster)) +
+  geom_point()
+```
+
+CTR-Analyse der Cluster
+```{r}
+median_ctr <- median(ctr_df$CTR)
+
+ctr_df %>% 
+  ggplot(aes(x=Cluster, y=CTR)) +
+  geom_boxplot() +
+  geom_hline(yintercept = median_ctr)
+
+#Cluster aussortieren, die deutlich vom CTR-Median entfernt liegen.
+clusters_perform <- ctr_df %>% 
+  group_by(Cluster) %>% 
+  summarise(CTR = median(CTR)) %>% 
+  filter(CTR > median_ctr*0.5) %>% 
+  select(Cluster) %>% 
+  unlist
+
+```
+
+```{r}
+ctr_perform_df <- ctr_df %>% 
+  filter(Cluster %in% clusters_perform) 
+
+ctr_perform_df %>% 
+  ggplot(aes(x=Pageviews, y=Klicks, color=Cluster)) +
+  geom_point()
+```
+
+Modellierung: Regression nach Clustering
+Zuerst: Normalverteilung erreichen
+```{r echo=FALSE}
+#Log-Transformation der Predictors zur besseren Modellierung:
+ctr_perform_df <- ctr_perform_df %>% 
+  mutate(logKlicks = log1p(Klicks),
+         logViews = log1p(Pageviews))
+
+ctr_perform_df %>% 
+  ggplot(aes(y=logViews, x=logKlicks)) +
+  geom_point()
 
 
+```
 
+Neue Regressionsmodellierung
+```{r}
+#Temporäres Modell zur Ausreißererkennung in den Reisduen
+clicks_lm_1 <- lm(logKlicks ~ logViews, data = ctr_perform_df)
+#Ausreißer markieren
+ctr_perform_outliers <- hampel.proc(clicks_lm_1$residuals)
 
+#Neues Modell ohne Ausreißer
+clicks_lm_2 <- lm(logKlicks ~ logViews, data=ctr_perform_df[-ctr_perform_outliers,])
+print(summary(clicks_lm_2)) #.83 r-squared
+plot(clicks_lm_2, which=1:4)
+shapiro.test(clicks_lm_2$residuals) #.9755
 
+#Normalverteilung der Residuen
+clicks_lm_2$residuals %>% 
+  as_tibble() %>% 
+  rename(Residuals = value) %>% 
+  ggplot(aes(x=Residuals)) +
+  geom_histogram(binwidth = .5) +
+  theme_minimal() +
+  ggtitle("Residuals of Model Clicks_LM_2")
 
+```
 
+ausgewähltes Modell:
 
-
-
-
-
+```{r}
+clicks_lm_2
+```
 
