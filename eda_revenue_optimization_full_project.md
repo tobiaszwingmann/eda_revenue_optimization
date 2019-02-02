@@ -487,7 +487,7 @@ clicks_lm <- lm(Klicks ~ Pageviews, data = weekly_raw_tbl)
 predicted_clicks <- data.frame(Klicks_Prediction = predict(clicks_lm, weekly_raw_tbl), Pageviews=weekly_raw_tbl$Pageviews)
 
 weekly_raw_tbl %>%
-  filter(Pageviews >= 50) %>% 
+  filter(Pageviews >= 1) %>% 
   select(Klicks, Pageviews) %>%
   ggplot(aes(y=Klicks, x=Pageviews)) +
   geom_point() +
@@ -537,11 +537,7 @@ ctr_df <- weekly_raw_tbl %>%
          Pageviews_scaled = scale(Pageviews))
 
 ctr_cluster_list <- kmeans(ctr_df %>% select(Pageviews_scaled, Klicks_scaled), 10, nstart=50)
-```
 
-    ## Warning: did not converge in 10 iterations
-
-``` r
 ctr_df$Cluster <- ctr_cluster_list$cluster
 
 ctr_df <- ctr_df %>% 
