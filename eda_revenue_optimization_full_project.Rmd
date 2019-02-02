@@ -452,6 +452,77 @@ weekly_raw_tbl %>%
   ggplot(aes(x=CTR)) +
   geom_histogram(binwidth = 0.01) + 
   geom_vline(aes(xintercept=CTR_mean))
+<<<<<<< HEAD
+```
+
+Schwankt der CTR in Abhängigkeit von der Zeit?
+Ergebnis: Nein, der CTR ist über die Zeit relativ konstant, hier scheint kein Muster vorzuliegen
+```{r}
+weekly_raw_tbl %>%
+  filter(Pageviews >= 50) %>% 
+  select(CTR, CW) %>%
+  ggplot(aes(y=CTR, x=CW)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+Vermutung: CTR variiert je nach Seiten-URL, also manche Seiten performen gut, andere weniger.
+Erkenntnis: Stimmt, der CTR schwankt stark nach Seiten-URL (Mittelwert 0.4 und 0.01). Die Sortierung der X-Achse hier erfolgt anhand der absteigenden Seitenaufrufe gesamt dieser Seiten-URL. Zwei Top-URLs haben katastrophale CTR-Werte
+```{r}
+tag_id_order <- weekly_raw_tbl %>%
+  filter(Pageviews >= 50) %>%
+  select(Tag, Pageviews) %>% 
+  group_by(Tag) %>% 
+  summarize(Pageviews = sum(Pageviews)) %>%
+  arrange(desc(Pageviews)) %>% 
+  select(Tag) %>% 
+  unlist
+
+weekly_raw_tbl %>%
+  arrange(desc(Pageviews)) %>% 
+  filter(Pageviews >= 50) %>% 
+  select(CTR, Tag) %>%
+  mutate(Tag = fct_relevel(Tag, tag_id_order)) %>% 
+  ggplot(aes(y=CTR, x=Tag)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+Wie verhält sich die CTR im Vergleich zu Seitenaufrufen? Schwankt die CTR in Abhängigkeit von den absoluten Seitenaufrufen?
+Zur Verdeutlichung schauen wir uns den direkten Zusammenhang zwischen Klicks und Pageviews an. Sollte die CTR konstant sein, müssten die Punkte durch eine Regressionsgerade verbunden werden können.
+
+Erkenntnis: Es existiert tatsächlich ein linearer Zusammenhang, je mehr Pageviews, desto mehr Klicks. Allerdings scheinen hier mindestens 2 Gruppen von Daten zu existieren, einige mit guter und einige mit schlechter Performance.
+
+Die Modellierung des CTR-Benchmarks sollte mindestens in Abhängigkeit der Pageviews durchgeführt werden.
+```{r}
+weekly_raw_tbl %>%
+  filter(Pageviews >= 50) %>% 
+  select(Klicks, Pageviews) %>%
+  ggplot(aes(y=Klicks, x=Pageviews)) +
+  geom_point()
+```
+
+Modellierungsversuch der o.g. Verteilung:
+
+```{r}
+clicks_lm <- lm(Klicks ~ Pageviews, data = weekly_raw_tbl)
+predicted_clicks <- data.frame(Klicks_Prediction = predict(clicks_lm, weekly_raw_tbl), Pageviews=weekly_raw_tbl$Pageviews)
+
+weekly_raw_tbl %>%
+  filter(Pageviews >= 50) %>% 
+  select(Klicks, Pageviews) %>%
+  ggplot(aes(y=Klicks, x=Pageviews)) +
+  geom_point() +
+  geom_line(data=predicted_clicks, aes(x=Pageviews, y=Klicks_Prediction), color="blue")
+
+```
+
+Qualität des Baseline-Modells:
+Schwache Resultate. Vor allem: Verlertzung der Annahme der Normalverteilung.
+```{r}
+summary(clicks_lm) #r2 0.594
+plot(clicks_lm, which=1)
+=======
 ```
 
 Schwankt der CTR in Abhängigkeit von der Zeit?
@@ -528,7 +599,7 @@ Cluster-Analyse: Auflösung der zwei Sub-Gruppen
 
 ```{r}
 ctr_df <- weekly_raw_tbl %>%
-  filter(Pageviews > 1) %>% 
+  filter(Pageviews > 10) %>% 
   select(Klicks, Pageviews, CTR, Tag) %>% 
   mutate(Klicks_scaled = scale(Klicks),
          Pageviews_scaled = scale(Pageviews))
@@ -540,6 +611,101 @@ ctr_df$Cluster <- ctr_cluster_list$cluster
 ctr_df <- ctr_df %>% 
   mutate(Cluster = as.factor(Cluster)) 
 
+ctr_df %>% 
+  ggplot(aes(x=Pageviews, y=Klicks, color=Cluster)) +
+  geom_point()
+```
+
+CTR-Analyse der Cluster
+```{r}
+median_ctr <- median(ctr_df$CTR)
+
+ctr_df %>% 
+  ggplot(aes(x=Cluster, y=CTR)) +
+  geom_boxplot() +
+  geom_hline(yintercept = median_ctr)
+
+#Cluster aussortieren, die deutlich vom CTR-Median entfernt liegen.
+clusters_perform <- ctr_df %>% 
+  group_by(Cluster) %>% 
+  summarise(CTR = median(CTR)) %>% 
+  filter(CTR > median_ctr*0.5) %>% 
+  select(Cluster) %>% 
+  unlist
+
+```
+
+```{r}
+ctr_perform_df <- ctr_df %>% 
+  filter(Cluster %in% clusters_perform) 
+
+ctr_perform_df %>% 
+  ggplot(aes(x=Pageviews, y=Klicks, color=Cluster)) +
+  geom_point()
+```
+
+Modellierung: Regression nach Clustering
+Zuerst: Normalverteilung erreichen
+```{r}
+ctr_perform_df %>% 
+  ggplot(aes(x=Pageviews)) + 
+  geom_histogram()
+
+ctr_perform_df %>% 
+  ggplot(aes(x=Klicks)) + 
+  geom_histogram()
+
+ctr_perform_df <- ctr_perform_df %>% 
+  mutate(logKlicks = log1p(Klicks),
+         logViews = log1p(Pageviews))
+
+ctr_perform_df %>% 
+  ggplot(aes(x=logViews)) + 
+  geom_histogram()
+
+ctr_perform_df %>% 
+  ggplot(aes(x=logKlicks)) + 
+  geom_histogram()
+
+ctr_perform_df %>% 
+  ggplot(aes(y=logViews, x=logKlicks)) +
+  geom_point()
+>>>>>>> 608520e31e123eafacf79334554eee969a86fedb
+
+```
+
+<<<<<<< HEAD
+Cluster-Analyse: Auflösung der zwei Sub-Gruppen
+
+```{r}
+ctr_df <- weekly_raw_tbl %>%
+  filter(Pageviews > 1) %>% 
+  select(Klicks, Pageviews, CTR, Tag) %>% 
+  mutate(Klicks_scaled = scale(Klicks),
+         Pageviews_scaled = scale(Pageviews))
+
+ctr_cluster_list <- kmeans(ctr_df %>% select(Pageviews_scaled, Klicks_scaled), 10, nstart=50)
+
+ctr_df$Cluster <- ctr_cluster_list$cluster
+=======
+```
+
+Neue Regressionsmodellierung
+```{r}
+clicks_lm_1 <- lm(logKlicks ~ logViews, data = ctr_perform_df)
+summary(clicks_lm_1) # 0.699
+plot(clicks_lm_1, which=1:4)
+
+shapiro.test(clicks_lm_1$residuals) #.89552
+
+#Ausreißer entfernen
+ctr_perform_outliers <- hampel.proc(clicks_lm_1$residuals)
+>>>>>>> 608520e31e123eafacf79334554eee969a86fedb
+
+ctr_df <- ctr_df %>% 
+  mutate(Cluster = as.factor(Cluster)) 
+
+<<<<<<< HEAD
 ctr_df %>% 
   ggplot(aes(x=Pageviews, y=Klicks, color=Cluster)) +
   geom_point()
@@ -614,6 +780,18 @@ clicks_lm_2$residuals %>%
 
 ausgewähltes Modell:
 
+=======
+clicks_lm_2 <- lm(logKlicks ~ logViews, data=ctr_perform_df[-ctr_perform_outliers,])
+summary(clicks_lm_2) #.83 r-squared
+
+plot(clicks_lm_2, which=1:4)
+shapiro.test(clicks_lm_2$residuals) #.9755
+
+```
+
+ausgewähltes Modell:
+
+>>>>>>> 608520e31e123eafacf79334554eee969a86fedb
 ```{r}
 clicks_lm_2
 ```
