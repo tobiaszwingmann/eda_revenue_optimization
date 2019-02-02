@@ -618,3 +618,23 @@ ausgewähltes Modell:
 clicks_lm_2
 ```
 
+Benchmarking: Berechne Benchmarks und füge diese an Gesamtdatensatz an
+```{r}
+weekly_raw_tbl$Klicks_Benchmark <- round(expm1(predict(clicks_lm_2, weekly_raw_tbl %>% mutate(logViews = log1p(Pageviews)))),0)
+
+weekly_raw_tbl <- 
+  weekly_raw_tbl %>% 
+  mutate(Klicks_Benchmark_erreicht = ifelse(Klicks >= Klicks_Benchmark, TRUE, FALSE))
+
+
+weekly_raw_tbl %>%
+  filter(Pageviews >= 1) %>% 
+
+  ggplot(aes(y=Klicks, x=Pageviews)) +
+  geom_point(aes(color=Klicks_Benchmark_erreicht)) +
+  geom_line(aes(x=Pageviews, y=Klicks_Benchmark), color="red")
+
+
+```
+
+
