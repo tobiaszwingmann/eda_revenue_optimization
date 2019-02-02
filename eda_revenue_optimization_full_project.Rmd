@@ -13,6 +13,7 @@ library("xml2")
 library("lubridate")
 library("scales") #0.4.0
 library("cluster") #2.0.4
+library("rbokeh")
 
 bind_pageview_csv_to_tbl <- function(path.names) {
   pageviews_tbl <- rbind(read_csv(path.names, 
@@ -70,34 +71,42 @@ Idea: Scrape Website and associate URLs with Tracking ID indicated as "tag=..." 
 ##Read a Sitemap to fetch all URLs a website has for scraping
 ```{r}
 
-html_urls <- read_rds("data/html_urls.rds")
+if (file.exists("data/html_urls.rds")) {
+  
+  html_urls <- read_rds("data/html_urls.rds")
 
+} else {
+  
 #Folgenden Code nur ausführen, wenn kein rds vorhanden ist:
 
-# sitemap <- read_xml("https://www.welches-hdmi-kabel.de/sitemap.xml")
-# # This sitemap is nested so we have to get all sitemaps first
-# 
-# sitemap_urls <- sitemap %>% 
-#   xml_children() %>% 
-#   xml_text() %>% 
-#   str_replace_all(".xml.*", ".xml")
-# 
-# sitemap_urls <- sitemap_urls[-1]
-# 
-# html_urls = tibble("URL" = character()) 
-#   
-# n = length(sitemap_urls)
-# 
-# for (i in 1:n ){
-#     html_urls[i,] <- 
-#     sitemap_urls[i] %>% 
-#     read_xml() %>% 
-#     xml_children() %>% 
-#     xml_child() %>% 
-#     xml_text()
-#   }
-# 
-# write_rds(html_urls, "data/html_urls.rds")
+ sitemap <- read_xml("https://www.welches-hdmi-kabel.de/sitemap.xml")
+ # This sitemap is nested so we have to get all sitemaps first
+
+ sitemap_urls <- sitemap %>%
+   xml_children() %>%
+   xml_text() %>%
+   str_replace_all(".xml.*", ".xml")
+
+ sitemap_urls <- sitemap_urls[-1]
+
+ html_urls = tibble("value" = character())
+
+ n = length(sitemap_urls)
+
+ #We iterate through each sitemap and extract the URLs starting with https:...
+ for (i in 1:n ){
+   html_urls <- rbind(html_urls,
+   sitemap_urls[i] %>%
+   read_xml() %>%
+   xml_children() %>%
+   xml_children() %>%
+   xml_text() %>%
+   as_tibble() %>%
+   filter(str_detect(value, 'https:'))
+ )
+   }
+ write_rds(html_urls, "data/html_urls.rds")
+}
 
 
 ```
@@ -106,48 +115,50 @@ html_urls <- read_rds("data/html_urls.rds")
 ```{r}
 #Scrape Webseiten nach Amazon Affiliate Tag
 
-matched_tags_to_url <- read_rds("data/matched_tags_to_url.rds")
+if (file.exists("data/matched_tags_to_url.rds")) {
 
+  matched_tags_to_url <- read_rds("data/matched_tags_to_url.rds")
 
-# matched_tags_to_url = tibble("Tag" = character(),
-#                         "n" = integer(),
-#                         "URL" = character()) 
-#   
-# n = nrow(html_urls)
-# 
-# j = 1L
-# 
-# for (i in 1:n) {
-# 
-#   url <-  html_urls[[1]][i]
-#   
-#   parsed_url_links <-
-#     url %>% 
-#     read_html() %>% 
-#     html_nodes("body") %>% 
-#     html_nodes("a") %>% 
-#     html_attr("href") %>% 
-#     as.tibble() 
-#     
-#    if(nrow(parsed_url_links %>% filter(str_detect(value, "tag="))) > 0) {
-#     #Code wird nur ausgeführt, wenn ein ausgehender Link mit Tag= auf der Webseite zu finden ist:
-#      matched_tags_to_url[j,] <-  
-#       parsed_url_links %>% 
-#       filter(str_detect(value, "tag=")) %>% 
-#       mutate(Tag = str_extract(value, "tag=.*-21")) %>% 
-#       mutate(Tag = str_remove(Tag, "tag=")) %>% 
-#       group_by(Tag) %>% 
-#       count %>% 
-#       mutate(URL = url)
-#      j <- j+1L
-#    }
-#    
-# }
-# rm(parsed_url_links, url, j, i, n)
-# 
-# write_rds(matched_tags_to_url, "data/matched_tags_to_url.rds")
+} else {
 
+ matched_tags_to_url = tibble("Tag" = character(),
+                         "n" = integer(),
+                         "URL" = character())
 
+ n = nrow(html_urls)
+
+ j = 1L
+
+ for (i in 1:n) {
+
+   url <-  html_urls[[1]][i]
+
+   parsed_url_links <-
+     url %>%
+     read_html() %>%
+     html_nodes("body") %>%
+     html_nodes("a") %>%
+     html_attr("href") %>%
+     as.tibble()
+
+    if(nrow(parsed_url_links %>% filter(str_detect(value, "tag="))) > 0) {
+     #Code wird nur ausgeführt, wenn ein ausgehender Link mit Tag= auf der Webseite zu finden ist:
+      matched_tags_to_url[j,] <-
+       parsed_url_links %>%
+       filter(str_detect(value, "tag=")) %>%
+       mutate(Tag = str_extract(value, "tag=.*-21")) %>%
+       mutate(Tag = str_remove(Tag, "tag=")) %>%
+       group_by(Tag) %>%
+       count %>%
+       mutate(URL = url)
+      j <- j+1L
+    }
+
+ }
+ rm(parsed_url_links, url, j, i, n)
+ write_rds(matched_tags_to_url, "data/matched_tags_to_url.rds")
+
+}
 
 ```
 
@@ -308,12 +319,29 @@ weekly_raw_tbl %>%
 
 
 # Exploration
-```{r}
 
+## Wöchentliche Trends allgemein
+### ... nach Seitenaufrufen
+```{r}
+weekly_raw_tbl %>% 
+  select(CW, Pageviews) %>% 
+  group_by(CW) %>% 
+  summarise(Pageviews = sum(Pageviews)) %>%
+  figure(width=750, title="Entwicklung der wöchentlichen Seitenaufrufe im Zeitverlauf") %>% 
+  ly_lines(CW, Pageviews) %>% 
+  theme_axis("x", major_label_orientation = 90)
 ```
 
-
-
+### ... nach Klicks
+```{r}
+weekly_raw_tbl %>% 
+  select(CW, Klicks) %>% 
+  group_by(CW) %>% 
+  summarise(Klicks = sum(Klicks)) %>%
+  figure(width=750, title="Entwicklung der wöchentlichen Seitenaufrufe im Zeitverlauf") %>% 
+  ly_lines(CW, Pageviews) %>% 
+  theme_axis("x", major_label_orientation = 90)
+```
 
 
 
