@@ -914,6 +914,11 @@ scores_df <- weekly_raw_tbl %>%
                                        )
                                 )
          )
+
+
+write_rds(scores_df, "data/scores_df.rds")
+
+
 ```
 
 Plotte Seiten-URLs mit hoher und niedriger CTR Performance
@@ -959,11 +964,16 @@ weekly_raw_tbl %>%
 ```
 
 Scoring Widget
-```{r eval=FALSE, include=FALSE}
+```{r}
 #Include as separate file
 
 scores_df %>% 
-  figure(width=750, title="CTR-RPC-Scoring Widget", ylab="RPC Score", xlab = "CTR Score") %>% 
-  ly_points(Score_CTR, Score_RPC, color = Handlungsfeld, hover=Tag, size=(sqrt(Pageviews/20))) 
+  ggplot(aes(x=Score_CTR, y=Score_RPC, color=Handlungsfeld, size=Pageviews)) +
+  geom_point() +
+  ggtitle("CTR-RPC-Scoring Widget") +
+  xlab("CTR Score") +
+  ylab("RPC Score") +
+  geom_hline(yintercept = .5, color="grey") +
+  geom_vline(xintercept = .5, color="grey")
 ```
 

@@ -1,0 +1,18 @@
+---
+title: "Scoring Widget"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(rbokeh)
+library(tidyverse)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+read_rds("data/scores_df.rds") %>% 
+  figure(width=750, title="CTR-RPC-Scoring Widget", ylab="RPC Score", xlab = "CTR Score") %>% 
+  ly_points(Score_CTR, Score_RPC, color = Handlungsfeld, hover=Tag, size=(sqrt(Pageviews/20)))
+```
+Each color represents one field of action:
+Green (3) = Underperformer, improve both CTR and RPC Blue (1) = Increase CTR by improving link placements
+Red (4) = Increase revenue by optimizing products being advertised Yellow (2) = Increase Traffic / Overperformer
