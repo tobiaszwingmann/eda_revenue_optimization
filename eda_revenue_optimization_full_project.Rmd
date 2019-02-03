@@ -959,7 +959,7 @@ weekly_raw_tbl %>%
 ```
 
 Scoring Widget
-```{r echo=FALSE}
+```{r eval=FALSE, include=FALSE}
 #Include as separate file
 
 scores_df %>% 

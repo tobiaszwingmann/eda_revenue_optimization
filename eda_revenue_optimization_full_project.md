@@ -97,7 +97,12 @@ if (file.exists("data/matched_tags_to_url.rds")) {
 
  }
  rm(parsed_url_links, url, j, i, n)
- write_rds(matched_tags_to_url, "data/matched_tags_to_url.rds")
+ 
+ #Für solche Fälle, in denen eine URL einen Tag enthält, der nicht über Amazon Partnernet getrackt wird (z.B. Amazon US-Programm, entsteht ein NA. Diese hier ausschließen für weitere Analyse.)
+ matched_tags_to_url <- matched_tags_to_url %>% 
+   filter(!is.na(Tag))
+
+  write_rds(matched_tags_to_url, "data/matched_tags_to_url.rds")
 
 }
 ```
@@ -252,6 +257,11 @@ weekly_raw_tbl <-
          Klicks = replace_na(Klicks, 0),
          Umsatz = replace_na(Umsatz, 0)) %>% 
   mutate(Umsatz = replace_na(Umsatz, 0)) %>% 
+  group_by(Tag, CW) %>% 
+  summarise(Pageviews = sum(Pageviews),
+            Klicks = sum(Klicks),
+            Umsatz = sum(Umsatz)) %>%
+  ungroup() %>% 
   mutate(CTR = ifelse(Pageviews == 0, 0, round(Klicks / Pageviews,4))) %>% 
   mutate(RPC = ifelse(Klicks == 0, 0, round(Umsatz / Klicks, 4)))
 ```
@@ -265,15 +275,15 @@ weekly_raw_tbl %>%
   head()
 ```
 
-    ## # A tibble: 6 x 9
-    ##   Tag     CW         n URL           Pageviews Klicks Umsatz     CTR   RPC
-    ##   <chr>   <chr>  <int> <chr>             <dbl>  <dbl>  <dbl>   <dbl> <dbl>
-    ## 1 25-fes… 2017-…     2 https://www.…       669     10    0   0.0149    0  
-    ## 2 25-fes… 2017-…     2 https://www.…       942      9    0   0.00960   0  
-    ## 3 25-fes… 2018-…     2 https://www.…       768      7   83.3 0.0091   11.9
-    ## 4 25-fes… 2018-…     2 https://www.…       615      7    0   0.0114    0  
-    ## 5 25-fes… 2018-…     2 https://www.…       621      5    0   0.0081    0  
-    ## 6 25-fes… 2018-…     2 https://www.…       565     10    0   0.0177    0
+    ## # A tibble: 6 x 7
+    ##   Tag               CW      Pageviews Klicks Umsatz     CTR   RPC
+    ##   <chr>             <chr>       <dbl>  <dbl>  <dbl>   <dbl> <dbl>
+    ## 1 25-festplatten-21 2017-51       669     10    0   0.0149    0  
+    ## 2 25-festplatten-21 2017-52       942      9    0   0.00960   0  
+    ## 3 25-festplatten-21 2018-01       768      7   83.3 0.0091   11.9
+    ## 4 25-festplatten-21 2018-02       615      7    0   0.0114    0  
+    ## 5 25-festplatten-21 2018-03       621      5    0   0.0081    0  
+    ## 6 25-festplatten-21 2018-04       565     10    0   0.0177    0
 
 Exploration
 ===========
@@ -508,18 +518,18 @@ summary(clicks_lm) #r2 0.594
     ## 
     ## Residuals:
     ##     Min      1Q  Median      3Q     Max 
-    ## -601.89  -10.45   -8.20    1.63  537.21 
+    ## -600.04  -11.53   -8.69    2.78  537.77 
     ## 
     ## Coefficients:
     ##             Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept) 8.767708   1.410767   6.215 5.83e-10 ***
-    ## Pageviews   0.127694   0.001906  66.996  < 2e-16 ***
+    ## (Intercept)  9.36932    1.49642   6.261 4.38e-10 ***
+    ## Pageviews    0.12733    0.00197  64.647  < 2e-16 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Residual standard error: 69.54 on 3066 degrees of freedom
-    ## Multiple R-squared:  0.5941, Adjusted R-squared:  0.594 
-    ## F-statistic:  4488 on 1 and 3066 DF,  p-value: < 2.2e-16
+    ## Residual standard error: 71.36 on 2910 degrees of freedom
+    ## Multiple R-squared:  0.5895, Adjusted R-squared:  0.5894 
+    ## F-statistic:  4179 on 1 and 2910 DF,  p-value: < 2.2e-16
 
 ``` r
 plot(clicks_lm, which=1)
@@ -558,7 +568,8 @@ median_ctr <- median(ctr_df$CTR)
 ctr_df %>% 
   ggplot(aes(x=Cluster, y=CTR)) +
   geom_boxplot() +
-  geom_hline(yintercept = median_ctr)
+  geom_hline(yintercept = median_ctr) +
+  coord_cartesian(ylim = c(0,1))
 ```
 
 ![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-19-1.png)
@@ -575,7 +586,8 @@ clusters_perform <- ctr_df %>%
 
 ``` r
 ctr_perform_df <- ctr_df %>% 
-  filter(Cluster %in% clusters_perform) 
+  filter(Cluster %in% clusters_perform) %>% 
+  filter(Klicks >= 10)
 
 ctr_perform_df %>% 
   ggplot(aes(x=Pageviews, y=Klicks, color=Cluster)) +
@@ -606,18 +618,18 @@ print(summary(clicks_lm_2)) #.83 r-squared
     ## 
     ## Residuals:
     ##      Min       1Q   Median       3Q      Max 
-    ## -2.18818 -0.42687  0.09484  0.51643  2.37083 
+    ## -1.52929 -0.33337  0.03408  0.40340  1.70936 
     ## 
     ## Coefficients:
-    ##              Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept) -1.142810   0.037883  -30.17   <2e-16 ***
-    ## logViews     0.882212   0.008146  108.29   <2e-16 ***
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept) -0.83348    0.07204  -11.57   <2e-16 ***
+    ## logViews     0.86685    0.01248   69.47   <2e-16 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Residual standard error: 0.7205 on 2327 degrees of freedom
-    ## Multiple R-squared:  0.8344, Adjusted R-squared:  0.8344 
-    ## F-statistic: 1.173e+04 on 1 and 2327 DF,  p-value: < 2.2e-16
+    ## Residual standard error: 0.5112 on 1197 degrees of freedom
+    ## Multiple R-squared:  0.8012, Adjusted R-squared:  0.8011 
+    ## F-statistic:  4825 on 1 and 1197 DF,  p-value: < 2.2e-16
 
 ``` r
 plot(clicks_lm_2, which=1:4)
@@ -626,14 +638,14 @@ plot(clicks_lm_2, which=1:4)
 ![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-22-1.png)![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-22-2.png)![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-22-3.png)![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-22-4.png)
 
 ``` r
-shapiro.test(clicks_lm_2$residuals) #.9755
+print(shapiro.test(clicks_lm_2$residuals)) #.9755
 ```
 
     ## 
     ##  Shapiro-Wilk normality test
     ## 
     ## data:  clicks_lm_2$residuals
-    ## W = 0.9824, p-value = 2.227e-16
+    ## W = 0.98218, p-value = 5.653e-11
 
 ``` r
 #Normalverteilung der Residuen
@@ -661,4 +673,470 @@ clicks_lm_2
     ## 
     ## Coefficients:
     ## (Intercept)     logViews  
-    ##     -1.1428       0.8822
+    ##     -0.8335       0.8668
+
+Benchmarking: Berechne Benchmarks und füge diese an Gesamtdatensatz an
+
+``` r
+weekly_raw_tbl$Klicks_Benchmark <- round(expm1(predict(clicks_lm_2, weekly_raw_tbl %>% mutate(logViews = log1p(Pageviews)))),0)
+
+weekly_raw_tbl <- 
+  weekly_raw_tbl %>% 
+  mutate(Klicks_Benchmark_erreicht = ifelse(Klicks >= Klicks_Benchmark, TRUE, FALSE))
+
+
+weekly_raw_tbl %>%
+  filter(Pageviews >= 1) %>% 
+
+  ggplot(aes(y=Klicks, x=Pageviews)) +
+  geom_point(aes(color=Klicks_Benchmark_erreicht)) +
+  geom_line(aes(x=Pageviews, y=Klicks_Benchmark), color="red")
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-24-1.png)
+
+### Verteilung der RPC insgesamt
+
+Existiert bei den RPC überhaupt Varianz? Es scheint mindestens 3 Peaks zu geben: um 0.18, 0.27 und unter 0.05. Erkenntnis: Ja, es existiert Varianz. Die CTR streut sogar relativ stark um den Mittelwert XXX. Wobei Mittelwert hier offensichtlich kein besonders gutes Lagemaß ist.
+
+``` r
+RPC_mean <- weekly_raw_tbl %>% select(RPC) %>% unlist %>% mean
+
+weekly_raw_tbl %>%
+  select(RPC) %>%
+  ggplot(aes(x=RPC)) +
+  geom_histogram(binwidth = 0.5) + 
+  geom_vline(aes(xintercept=RPC_mean)) +
+  coord_cartesian(xlim = c(0,10))
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-25-1.png)
+
+Schwankt der RPC in Abhängigkeit von der Zeit? Ergebnis: Schwer zusagen auf Grundlage der vielen Ausreißer nach oben.
+
+``` r
+weekly_raw_tbl %>%
+  select(RPC, CW) %>%
+  ggplot(aes(y=RPC, x=CW)) +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(0,20)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  geom_hline(yintercept = RPC_mean)
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-26-1.png)
+
+Vermutung: RPC variiert je nach Seiten-URL, also manche Seiten performen gut, andere weniger. Erkenntnis: Stimmt, der RPC schwankt stark nach Seiten-URL. Die Sortierung der X-Achse hier erfolgt anhand der absteigenden Klicks gesamt dieser Seiten-URL. Eine der Top-URLs hat katastrophale CTR-Werte
+
+``` r
+tag_id_order <- weekly_raw_tbl %>%
+  select(Tag, Klicks) %>% 
+  group_by(Tag) %>% 
+  summarize(Klicks = sum(Klicks)) %>%
+  arrange(desc(Klicks)) %>% 
+  select(Tag) %>% 
+  unlist
+
+weekly_raw_tbl %>%
+  select(RPC, Tag) %>%
+  mutate(Tag = fct_relevel(Tag, tag_id_order)) %>% 
+  ggplot(aes(y=RPC, x=Tag)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  coord_cartesian(ylim = c(0,10))
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-27-1.png)
+
+Wie verhält sich die RPC im Vergleich zu den Klicks? Zur Verdeutlichung schauen wir uns den direkten Zusammenhang zwischen Umsatz und Klicks an. Sollte die RPC konstant sein, müssten sich die Punkte durch eine Regressionsgerade einfach verbinden lassen.
+
+``` r
+weekly_raw_tbl %>%
+  select(Umsatz, Klicks) %>%
+  ggplot(aes(y=Umsatz, x=Klicks)) +
+  geom_point()
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-28-1.png) Erkenntnis: Linearer Zusammenhang existiert.
+
+Die Modellierung des CTR-Benchmarks sollte mindestens in Abhängigkeit der Pageviews durchgeführt werden.
+
+Modellierungsversuch der o.g. Verteilung:
+
+``` r
+revenues_lm <- lm(Umsatz ~ Klicks, data = weekly_raw_tbl)
+predicted_revenues <- data.frame(Umsatz_Prediction = predict(revenues_lm, weekly_raw_tbl), Klicks=weekly_raw_tbl$Klicks)
+
+weekly_raw_tbl %>%
+  filter(Klicks >= 1) %>% 
+  select(Klicks, Umsatz) %>%
+  ggplot(aes(y=Umsatz, x=Klicks)) +
+  geom_point() +
+  geom_line(data=predicted_revenues, aes(x=Klicks, y=Umsatz_Prediction), color="blue")
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-29-1.png)
+
+Qualität des Baseline-Modells: Schwache Resultate. Vor allem: Verlertzung der Annahme der Normalverteilung.
+
+``` r
+summary(revenues_lm) #r2 0.7116
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = Umsatz ~ Klicks, data = weekly_raw_tbl)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -1670.6   -36.6     3.6    13.2  3964.2 
+    ## 
+    ## Coefficients:
+    ##              Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept) -13.19125    4.70991  -2.801  0.00513 ** 
+    ## Klicks        3.20177    0.03797  84.314  < 2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 228.2 on 2910 degrees of freedom
+    ## Multiple R-squared:  0.7095, Adjusted R-squared:  0.7094 
+    ## F-statistic:  7109 on 1 and 2910 DF,  p-value: < 2.2e-16
+
+``` r
+plot(revenues_lm, which=1)
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-30-1.png)
+
+Cluster-Analyse: Auflösung Eliminiernug bestimmter Punkte zur besseren Modellierung
+
+``` r
+rpc_hclust <- weekly_raw_tbl %>% 
+  select(Tag, RPC, Klicks, Umsatz, CW) %>% 
+  mutate(RPC = scale(RPC, center = TRUE, scale = TRUE) ) %>% 
+  select(-Klicks, -Umsatz) %>% 
+  spread(Tag, RPC) %>% 
+  select(-CW)
+
+min(rpc_hclust, na.rm = T)
+```
+
+    ## [1] -0.3155773
+
+``` r
+#Replace missing with minimal value
+rpc_hclust <- 
+  rpc_hclust %>% 
+  mutate_all(funs(replace(., is.na(.), min(rpc_hclust, na.rm = T)))) %>% 
+  t()
+
+rpc_hclust <- hclust(dist(rpc_hclust, method = "euclidean"), method="ward.D")
+plot(rpc_hclust)
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-31-1.png)
+
+``` r
+rpc_hclust_assignment <- cutree(rpc_hclust, h=20) %>% 
+  as.list() %>% 
+  as_tibble() %>% 
+  t()
+
+rpc_hclust_assignment = data.frame("Tag" = rownames(rpc_hclust_assignment),
+                                   "Cluster" = rpc_hclust_assignment[,1])
+
+rpc_df <- weekly_raw_tbl %>% 
+  left_join(rpc_hclust_assignment, by="Tag") %>% 
+  mutate(Cluster = as.factor(Cluster)) 
+```
+
+    ## Warning: Column `Tag` joining character vector and factor, coercing into
+    ## character vector
+
+``` r
+#Clicks vs. Views in each cluster
+ rpc_df %>%
+  ggplot(aes(Klicks, Umsatz)) + 
+  geom_point() + 
+  scale_y_continuous(labels = comma) +
+  ggtitle("R2: Umsatz gegen Clicks mit Cluster") +
+  ylab("Umsatz") +
+  xlab("Klicks") +
+  facet_wrap(~Cluster, ncol=3, scales = "free")
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-31-2.png)
+
+``` r
+rpc_df %>% 
+  ggplot(aes(x=Klicks, y=Umsatz, color=Cluster)) +
+  geom_point()
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-31-3.png)
+
+RPC-Analyse der Cluster
+
+``` r
+median_rpc <- median(rpc_df$RPC)
+
+rpc_df %>% 
+  ggplot(aes(x=Cluster, y=RPC)) +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(0,20)) +
+  geom_hline(yintercept = median_rpc)
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-32-1.png)
+
+``` r
+#Cluster mit hohen RPC auswählen.
+clusters_perform <- rpc_df %>% 
+  group_by(Cluster) %>% 
+  summarise(RPC = median(RPC)) %>% 
+  filter(RPC >= median_rpc) %>% 
+  select(Cluster) %>% 
+  unlist
+```
+
+``` r
+#Performance Datensatz: Nur Cluster mit hohen RPC und Datenpunkte mit mehr als 0 Umsatz
+rpc_perform_df <- rpc_df %>% 
+  filter(Cluster %in% clusters_perform) %>% 
+  filter(Klicks > 0 & Umsatz > 0)
+
+rpc_perform_df %>% 
+  ggplot(aes(x=Klicks, y=Umsatz, color=Cluster)) +
+  geom_point()
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-33-1.png)
+
+Modellierung: Regression nach Clustering Zuerst: Normalverteilung erreichen
+
+``` r
+#Log-Transformation der Predictors zur besseren Modellierung:
+rpc_perform_df <- rpc_perform_df %>%
+  mutate(logKlicks = log1p(Klicks),
+         logUmsatz = log1p(Umsatz))
+
+hist(rpc_perform_df$logKlicks)
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-34-1.png)
+
+``` r
+hist(rpc_perform_df$logUmsatz)
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-34-2.png)
+
+``` r
+rpc_perform_df %>% 
+  ggplot(aes(y=logKlicks, x=logUmsatz)) +
+  geom_point()
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-34-3.png)
+
+Neue Regressionsmodellierung
+
+``` r
+#Temporäres Modell zur Ausreißererkennung in den Reisduen
+rev_lm_1 <- lm(logUmsatz ~ logKlicks, data = rpc_perform_df)
+#Ausreißer markieren
+rev_perform_outliers <- hampel.proc(rev_lm_1$residuals)
+
+#Neues Modell ohne Ausreißer
+rev_lm_2 <- lm(logUmsatz ~ logKlicks, data=rpc_perform_df[-rev_perform_outliers,])
+print(summary(rev_lm_2)) #.75 r-squared
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = logUmsatz ~ logKlicks, data = rpc_perform_df[-rev_perform_outliers, 
+    ##     ])
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -2.12991 -0.45285  0.02369  0.47823  2.29075 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)  0.95841    0.07633   12.55   <2e-16 ***
+    ## logKlicks    0.99559    0.01784   55.82   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 0.7744 on 1033 degrees of freedom
+    ## Multiple R-squared:  0.751,  Adjusted R-squared:  0.7507 
+    ## F-statistic:  3115 on 1 and 1033 DF,  p-value: < 2.2e-16
+
+``` r
+plot(rev_lm_2, which=1:4)
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-35-1.png)![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-35-2.png)![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-35-3.png)![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-35-4.png)
+
+``` r
+print(shapiro.test(rev_lm_2$residuals)) #.99
+```
+
+    ## 
+    ##  Shapiro-Wilk normality test
+    ## 
+    ## data:  rev_lm_2$residuals
+    ## W = 0.99277, p-value = 6.101e-05
+
+``` r
+#Normalverteilung der Residuen
+rev_lm_2$residuals %>% 
+  as_tibble() %>% 
+  rename(Residuals = value) %>% 
+  ggplot(aes(x=Residuals)) +
+  geom_histogram(binwidth = .5) +
+  theme_minimal() +
+  ggtitle("Residuals of Model Clicks_LM_2")
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-35-5.png)
+
+ausgewähltes Modell:
+
+``` r
+rev_lm_2
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = logUmsatz ~ logKlicks, data = rpc_perform_df[-rev_perform_outliers, 
+    ##     ])
+    ## 
+    ## Coefficients:
+    ## (Intercept)    logKlicks  
+    ##      0.9584       0.9956
+
+Benchmarking: Berechne Benchmarks und füge diese an Gesamtdatensatz an
+
+``` r
+weekly_raw_tbl$Umsatz_Benchmark <- round(expm1(predict(rev_lm_2, weekly_raw_tbl %>% mutate(logKlicks = log1p(Klicks)))),0)
+
+weekly_raw_tbl <- 
+  weekly_raw_tbl %>% 
+  mutate(Umsatz_Benchmark_erreicht = ifelse(Umsatz >= Umsatz_Benchmark, TRUE, FALSE))
+
+
+weekly_raw_tbl %>%
+  ggplot(aes(y=Umsatz, x=Klicks)) +
+  geom_point(aes(color=Umsatz_Benchmark_erreicht)) +
+  geom_line(aes(x=Klicks, y=Umsatz_Benchmark), color="red")
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-37-1.png)
+
+Scoring Model
+-------------
+
+Predict Clicks based on regression model & calculate Benchmark cTRs for each data point
+
+``` r
+#See the new variance of CTR and RPC Benchmarks. Far more accurate than "just" mean value
+weekly_raw_tbl <-
+  weekly_raw_tbl %>% 
+  mutate(Benchmark_CTR = Klicks_Benchmark / Pageviews,
+         Benchmark_RPC = Umsatz_Benchmark / Klicks)
+
+weekly_raw_tbl %>% 
+  select(Benchmark_CTR) %>% 
+  filter(Benchmark_CTR > 0) %>% 
+  summary()
+```
+
+    ##  Benchmark_CTR   
+    ##  Min.   :0.1342  
+    ##  1st Qu.:0.1871  
+    ##  Median :0.2143  
+    ##  Mean   :0.2141  
+    ##  3rd Qu.:0.2400  
+    ##  Max.   :0.2857
+
+``` r
+weekly_raw_tbl %>% 
+  select(Benchmark_RPC) %>% 
+  filter(Benchmark_RPC < Inf) %>% 
+  summary()
+```
+
+    ##  Benchmark_RPC  
+    ##  Min.   :2.531  
+    ##  1st Qu.:2.583  
+    ##  Median :2.667  
+    ##  Mean   :2.868  
+    ##  3rd Qu.:3.000  
+    ##  Max.   :4.000
+
+``` r
+scores_df <- weekly_raw_tbl %>%
+  filter(Pageviews > 0) %>% #Scoring nur bei Seiten mit Seitenaufrufen durchführen
+  group_by(Tag) %>% 
+  summarize(Score_CTR = mean(Klicks_Benchmark_erreicht),
+            Score_RPC = mean(Umsatz_Benchmark_erreicht),
+            Pageviews = sum(Pageviews)) %>% 
+  mutate(Handlungsfeld = ifelse(Score_CTR > 0.5 & Score_RPC <=0.5,"B",
+                                ifelse(Score_CTR > 0.5 & Score_RPC > 0.5,"C",
+                                       ifelse(Score_CTR <= 0.5 & Score_RPC > 0.5,"D",
+                                              "A")
+                                       )
+                                )
+         )
+```
+
+Plotte Seiten-URLs mit hoher und niedriger CTR Performance
+
+``` r
+ctr_underperform_urls <- scores_df %>% 
+  arrange(Score_CTR) %>% 
+  head(5) %>% 
+  select(Tag) %>% 
+  unlist
+
+ctr_overperform_urls <- scores_df %>% 
+  arrange(Score_CTR) %>% 
+  tail(5) %>% 
+  select(Tag) %>% 
+  unlist
+
+rpc_underperform_urls <- scores_df %>% 
+  arrange(Score_RPC) %>% 
+  head(5) %>% 
+  select(Tag) %>% 
+  unlist
+
+rpc_overperform_urls <- scores_df %>% 
+  arrange(Score_RPC) %>% 
+  tail(5) %>% 
+  select(Tag) %>% 
+  unlist
+
+weekly_raw_tbl %>%
+  select(Tag, Pageviews, Klicks) %>%
+  filter(Tag %in% ctr_underperform_urls) %>% 
+  ggplot(aes(y=Klicks, x=Pageviews, color=Tag)) +
+  geom_point() +
+  ggtitle("Tags mit schlechter CTR Performance")
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-40-1.png)
+
+``` r
+weekly_raw_tbl %>%
+  select(Tag, Umsatz, Klicks) %>%
+  filter(Tag %in% rpc_underperform_urls) %>% 
+  ggplot(aes(y=Umsatz, x=Klicks, color=Tag)) +
+  geom_point() +
+  ggtitle("Tags mit schlechter RPC Performance")
+```
+
+![](eda_revenue_optimization_full_project_files/figure-markdown_github/unnamed-chunk-40-2.png)
+
+Scoring Widget
