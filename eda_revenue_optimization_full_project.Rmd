@@ -1,5 +1,5 @@
 ---
-title: 'EDA: Revenue Optimization for an Affiliate Website'
+title: "Anwendung explorativer Datenanalyse zur Identifikation von Optimierungspotenzialen hinsichtlich des Umsatzes am Beispiel eines On-line-Publishers mit Affiliate-Ansatz""
 author: "Tobias Zwingmann"
 date: "9 1 2019"
 output: github_document
@@ -65,13 +65,166 @@ hampel.proc <- function(x, t = 3, RemoveNAs = FALSE){
 mav <- function(x,n=5){filter(x,rep(1/n,n), sides=2)}
 ```
 
+# 1. Einleitung
 
+## 1.1 Thema des Projektes
+
+Die weltweite Menge an Daten wächst explosionsartig an. Dank neuer Technologien und günstiger Speichermedien produziert die Menschheit mehr Daten als jemals zuvor in ihrer Geschichte.  Besonders betroffen von dieser Entwicklung ist die Internetwirtschaft, eine Industrie, die per se mit der Generierung und Speicherung großer Datenmengen eng verbunden ist. Grundsätzlich versprechen sich Unternehmen von der Auswertung ihrer Datenbestände vor allem Wettbewerbsvorteile, Hinweise auf Einspa-rungspotenziale oder Impulse für neue Geschäftsfelder. Wie genau allerdings die angehäuften Datenmengen in wirtschaftlich nutzbare Informationen umgewandelt werden können, stellt viele Firmen immer noch vor große Herausforderungen. 
+
+Im vorliegenden Projekt wird für ein Unternehmen im Bereich Online-Marketing ein Informationsportal untersucht, welches in erster Linie durch die Ausspielung programmatischer Werbeanzeigen sowie durch im Content platzierte Affiliate-Links Erlöse erzielt.
+
+Während vom Seitenbetreiber Daten bereits in Echtzeit genutzt werden, um beispielsweise die Auslieferung und Positionierung von Werbeanzeigen automatisch zu optimieren, bedarf es auf strategischer Ebene anderer Ansätze, um der Datenflut Herr zu werden und daraus Ableitungen für das Geschäftsmodell zu treffen.
+
+Im Projekt wünscht sich die Unternehmensleitung eine Einschätzung darüber, wie einzelne Inhalte und Themen auf dem Informationsportal zukünftig besser positioniert werden könnten, um die Gesamteinnahmen der Seite dauerhaft zu erhöhen. Dabei geht es explizit nicht um die Optimierung einzelner Klickpreise per se, sondern vorgelagert um die Generierung strategischer Handlungsempfehlungen, die entsprechende Aktionen für bestimmte Themenbereiche der Seite vorschlägt.
+
+Diese Analysen sollen überwiegend durch quantitative Informationen aus verschiedenen Datenquellen gedeckt werden. Das Management erwartet dabei objektive und validierbare Informationen aus entsprechenden Nutzungsdaten der Webseite selbst und damit verbundener Systeme zur Unterstützung der strategischen Entscheidungsfindung.
+
+## 1.2 Fragestellung
+
+Zur Erstellung dieser strategischen Handlungsempfehlungen im Kontext des Online-Marketings (hier speziell: Affiliate-Marketing) müssen folgende zwei zentrale Probleme geklärt werden:
+
+Das erste Problem bezieht sich auf die Definition eines Sets von Erfolgskennzahlen (KPIs). Als konzeptionelles Rahmengerüst dienen hierbei die branchenüblichen Referenzwerte Klickrate (CTR) und Umsatz-Pro-Klick (RPC). Diese beiden Kennzahlen müssen zum einen hinreichend konkretisiert (z. B. Definition des Zeitbezugs) und zum anderen in eine sinnhafte Verbindung miteinander gebracht werden. Die für die Berechnung der Kennzahlen notwendigen Daten liegen typischerweise in unterschiedlichen Systemen vor (hier: Google Analytics für CTR und Amazon Partnernet für RPC). Zur Auflösung dieses Problems werden einerseits fest definierte Regelwerke (Business Rules) und geeignete Primärschlüssel zur Verknüpfung unterschiedlicher Datenquellen benötigt.
+
+Die zweite Problemdimension bezieht sich auf die qualitative Beurteilung der einzelnen Kennzahlen, d.h. konkret: Ab wann ist ein bestimmter Wert für eine gegebene KPI gut oder schlecht? Unterschiedliche Unterseiten haben unterschiedliche Besucher und Klickraten sowie Umsätze unterliegen zum Teil starken Schwankungen im Zeitverlauf (z. B. Abhängigkeit von Wochentagen). Daher reichen Trivialmodelle wie zum Beispiel statistische Mittelwerte zur Einschätzung der Güte einer KPI-Kennzahl nicht aus.
+
+Als Lösung bieten sich maschinelle Lernverfahren an, die die schiefe Verteilung der Input-Daten entsprechend berücksichtigen und valide Einschätzungen erlauben, ob beispielsweise ein zu einer bestimmten Zeit und auf einer bestimmten Seite erreichter CTR-Wert akzeptabel ist, oder nicht. 
+
+Im Anschluss an die Bearbeitung der beiden zuvor genannten Probleme stellt sich außerdem die Frage, in welcher Form die gewonnenen Ergebnisse genutzt oder kommuniziert werden sollen. Die zentralen Anforderungen hier sind: instruktive Visualisierung, Interaktivität und programmatische Reproduzierbarkeit. Auf diese Weise soll eine aussagekräftige Visualisierung erzeugt werden, die zudem idealerweise programmatisch jederzeit neu generierbar und erweiterbar ist, ohne den kompletten Prozess jeweils komplett neu starten zu müssen.
+
+## 1.3 Zielsetzung 
+Als zentrales Deliverable soll eine interaktive Visualisierung erstellt werden, die eine Einordnung von einzelnen Unterseiten des Informationsportals mit geeigneten KPIs in eine strategische Handlungsfeldmatrix vornimmt und entsprechende Handlungsempfehlungen vorschlägt, wie der im Beispielfall generierte Umsatz weiter gesteigert werden kann.
+
+
+# 2. Einordnung in den Kontext Data Science
+Die Lösung der gegebenen Problemstellung erfordert die effiziente Verknüpfung spezifischen Domänenwissens, statistischer Kenntnisse sowie der programmiertechnischen Fähigkeit zur Handhabung der unterschiedlichen Datenformate und Quellsysteme in Verbindung mit einer entsprechenden Datenmodellierung zur Ableitung zielführender Erkenntnisse. Der Schwerpunkt der Arbeit liegt auf der Datenanalyse und hier insbesondere auf dem Teilbereich Data Preparation, d. h. die sinnvolle Verknüpfung und pro-grammatische Aufbereitung der Input-Daten zur korrekten Berechnung der KPIs (CTR und RPC) sowie in der anschließenden Modellentwicklung zur Bewertung der KPI-Performance (Score-Wert).
+
+**In diesem Abschnitt sollen Aufgabe und Lösungsansätze in den Kontext existierender Ansätze im Bereich Data Science gestellt und auch alternative Lösungswege, die nicht beschritten wurden, dargestellt werden. Zunächst soll der Zusammenhang zu den Themen der Zertifizierung dargestellt werden: 
+Wie und an welcher Stelle bestehen Zusammenhänge insbesondere zu folgenden Themengebieten? 
+
+- (Big) Data Analytics 
+- Visualisierung 
+Anschließend soll die Arbeit auch im Kontext des erworbenen Spezialisten-Zertifikats (z. B. „Data Scientist Specialized in Data Management“, „Data Scientist Specialized in Data Analytics“ oder „Data Scientist Specialized in Machine Learning“) im Hinblick auf die gewählte Vertiefung beleuchtet werden.**
+
+
+# 3. Dokumentation des Lösungsweges
+
+# 3.1 Business Understanding
+
+# 3.1.1 Affiliate Marketing als Geschäftsmodell
+
+Unter „Affiliate-Marketing“ wird allgemein ein auf Online-Kooperationen basierendes Marketing- und Vertriebskonzept im Bereich des E-Business verstanden (Vgl. Kollmann, T. (2011), S. 299.).  Affiliate-Marketing ist als Spezialbereich des Online-Marketings zu betrachten (Vgl. Jurišová, V. (2013), S. 5.). 
+
+Eine Affiliate-Partnerschaft besteht typischerweise aus einer Dreiecksbeziehung zwischen einem Online-Händler (sogenannter Merchant bzw. Programmbetreiber), einem Webseitenbetreiber (sogenannter Affiliate bzw. Publisher) und dessen Webseitenbesuchern (Vgl. Büttgen, M. (2003), S. 323.).  
+
+Merchant und Affiliate gehen dabei eine Kooperation ein: Der Webseitenbetreiber (Affiliate) bewirbt Produkte des Merchants auf seiner Website und wirkt damit als Absatzmittler des Merchants.  Im Gegenzug erhält der Webseitenbetreiber eine erfolgsabhängige Vergütung. Das Verhältnis von Affiliate, Merchant und Webseitenbe-suchern ist schematisch in Abbildung 2 dargestellt. Affiliate Marketing kann damit als Übertragung des seit Jahrzehnten existierenden Prinzips der Vertriebs- oder Netzwerkpartner in die Online-Welt gesehen werden. (Vgl. Lammenett, E. (2015), S. 45.)
+
+```{r}
+# Abbildung 2: Beziehungen im Affiliate-Marketing
+
+print("Quelle: Eigene Darstellung")
+```
+
+In der Regel bauen Merchants über Affiliate-Programme (Partnerprogramme) sehr viele Kooperationen zu unterschiedlichen Publishern auf. Das Ziel dabei ist es, den Zugang zu kontext- oder zielgruppenrelevanten Content- bzw. Community-Webseiten (Nischenwebseiten) zu verbessern. Zwar weisen diese Webseiten in der Regel im Vergleich zu reichweitenstarken Plattformen eine geringere Besucherfrequenz auf, bieten dafür aber eine erhöhte Themenrelevanz und damit bessere Chancen für einen Geschäftsabschluss (Vgl. Lücke, F., Webering, J. (2003), S. 13 sowie Tollert, D. (2009), S. 12.).
+
+Merchants stellen für die Bewerbung ihrer Produkte unterschiedliche Werbemittel bereit. Prinzipiell handelt es sich dabei um die gleichen Werbeformen, die auch im klassischen Online-Marketing genutzt werden, d. h. vor allem Grafikbanner und Text-Links. 
+
+Der essenzielle Unterschied zwischen Affiliate-Marketing und der herkömmlichen Ban-nerwerbung ist, dass die Partner beim Affiliate-Marketing grundsätzlich erfolgsabhängig vergütet werden, d. h. zum Beispiel bei Erreichung eines Kaufabschlusses (Pay per Sale) oder der Registrierung eines Neukunden (Pay per Lead).  Kaufabschlüsse werden in der Regel innerhalb einer bestimmten Frist angerechnet (Vgl. Tollert, D. (2009), S. 17f.).  
+
+In der klassischen Bannerwerbung werden hingegen häufig die reine Einblendung eines Werbemittels (Pay per View) oder der Klick auf ein Werbemittel (Pay per Click) vergütet. Darüber hinaus existieren natürlich auch Mischformen, sodass in einigen Fällen auch Affiliate-Programme mit beispielsweise einer Pay-per-Click-Abrechnung angeboten werden. Diese Formate kommen in der Gesamtbetrachtung allerdings äußerst selten vor. 
+
+Eine schematische Darstellung der Abgrenzung zwischen klassischem Online-Marketing und Affiliate-Marketing ist in Abbildung 3 zu sehen.
+
+```{r}
+# Abbildung 3: Abbildung 3: Abgrenzung des klassischen Online-Marketings und des Affiliate-Ansatzes anhand der Vergütungsmodelle im E-Business
+
+print("Quelle: Eigene Abbildung nach: Kollmann, T. (2011): S. 301")
+
+```
+
+
+## 3.1.2 Definition relevanter Kennzahlen
+Zur Messung der Leistung einer Website werden unterschiedliche Kennzahlen erhoben. Im Folgenden sollen die zwei wichtigsten Kennzahlensysteme für die beiden häufigsten Vergütungsmodelle Pay per Click (PPC) und Pay per Sale (PPS) erläutert und einander gegenübergestellt werden.
+
+Im klassischen PPC-Ansatz bilden die sogenannte „Click-Through-Rate“ (CTR) und der „Cost-per-Click“ (CPC) die beiden maßgeblichen Kennzahlen zur Bestimmung der Leistungsfähigkeit eines Online-Projektes.
+
+Zur weiteren Erläuterung sollen nachfolgend einige Notationen und Definitionen eingeführt werden. 
+
+Die Indexvariable s bezeichnet im Kontext der vorliegenden Arbeit eine jeweils fest definierte Seiten-URL, inklusive der dieser Seite zugeordneten Werbemittel. Die 
+Indexvariable t referenziert eine bestimmte Periode, in der Leistungen (z. B. Klicks oder Umsätze) beobachtet wurden. Die Perioden weisen untereinander jeweils die gleiche Länge auf und überschneiden sich zeitlich nicht. Eine Periode ist beispielsweise ein genaues Tagesdatum. Die Anzahl aller Perioden wird mit der Variable p gekennzeichnet und als Beobachtungszeitraum definiert. Die Anzahl aller Seiten-URLs wird mit der Variable n notiert, die zugleich als Seitenumfang dient.
+Die Anzahl der Aufrufe einer bestimmten Seiten-URL in einer festgelegten Periode t wird als v_st definiert. Entsprechend lässt sich die Menge aller Aufrufe je Seiten-URL in allen beobachteten Perioden als Matrix mit n × p Elementen von v_st darstellen (Formel 1).
+
+Matrizen werden nachfolgend mit fettgedruckten Großbuchstaben symbolisiert.
+
+*Formel 1: Definition der Matrix* $\mathbf{V}$
+$$\mathbf{V}∶=(v_{st})_{s=1,…,n;t=1,…,p}  ∈ R^{n×p}$$
+
+Vektoren sollen nachfolgend als nicht-fettgedruckte Großbuchstaben dargestellt werden. Die Matrix $\mathbf{V}$ kann durch Vektorisierung auch als Vektor $V$ ausgedrückt werden. Die Vektorisierung von $\mathbf{V}$ ist in Formel 2 festgelegt.
+
+*Formel 2: Definition der Vektorisierung der Matrix* $\mathbf{V}$
+$$V:= vect(\mathbf{V}) := (v_{11}, v_{12}, … , v_{1p}, … , v_{n1}, … , v_{np}) ∈ R^{np}$$
+
+Die in einer Periode $t$ erzielten Klicks auf ein oder mehrere Werbemittel einer bestimmten Seiten-URL $s$ sollen mit $c_{st}$ bezeichnet werden. Auch hier wird die Gesamtheit aller Klicks pro Webseite und Periode innerhalb eines Beobachtungszeitraums als Matrix mit $n × p$ Elementen definiert. Die Definition der Matrix $\mathbf{C}$ ergibt sich analog zur Matrix $\mathbf{V}$ in Formel 3.
+
+*Formel 3: Definition der Matrix* $\mathbf{C}$
+$$\mathbf{C}∶=(c_{st})_{s=1,…,n;t=1,…,p}  ∈ R^{n×p}$$
+
+Analog zu $\mathbf{V}$ und $V$ kann auch hier eine Vektorisierung der Matrix vorgenommen werden. Die Vektorisierung von $\mathbf{C}$ ist in Formel 4 dargestellt. 
+
+*Formel 4: Definition der Vektorisierung von* $\mathbf{C}$
+$$C:= vect(\mathbf{C}) := (c_{11}, c_{12}, … , c_{1p}, … , c_{n1}, … , c_{np}) ∈ R^{np}$$
+
+Aus Sicht eines Webseitenbetreibers misst die Klickrate CTR allgemein, wie oft ein Werbemittel im Verhältnis zu dessen Einblendungen angeklickt wird. Der Klick auf ein bezahltes Werbemittel kann in diesem Kontext auch als Konversion interpretiert werden. Die Kennzahl CTR lässt sich sowohl auf einzelne Werbemittel als auch auf eine ganze Seiten-URL anwenden. Im vorliegenden Fallbeispiel soll die Interpretation der Seiten-CTR verwendet werden, welche die Leistung aller Werbemittel auf einer Seiten-URL misst. Hintergrund ist, dass nicht die Leistungssteigerung einzelner Werbebanner im Vordergrund steht, sondern die Identifikation von seitenübergreifenden Optimierungspotenzialen. Entsprechend dazu ist die Kennzahl der Seiten-CTR in Formel 5 notiert für $s=1,…,n$  und $t=1,…,p$.
+
+*Formel 5: Definition der Kennzahl CTR*
+$$ctr_{st} ≔  \frac{c_{st}}{v_{st}}$$
+
+Die Matrix $\mathbf{CTR}$ soll alle Einzelwerte der $n$ Seiten-CTR in den $p$ Perioden beinhalten und ist in Formel 6 definiert.
+
+*Formel 6: Definition der Matrix* $\mathbf{CTR}$
+$$\mathbf{CTR}∶=(ctr_{st})_{s=1,…,n;t=1,…,p} ∈ R^{n×p}$$
+
+Der Vektor $CTR$ stellt auch hier die Vektorisierung von $\mathbf{CTR}$ dar und ist in Formel 7 dargelegt.
+
+*Formel 7: Definition der Vektorisierung der* $\mathbf{CTR}$
+$$CTR ≔ vect(\mathbf{CTR}) ≔(ctr_{11}, ctr_{12} ,… , ctr_{1p} ,… , ctr_{n1} ,… , ctr_{np})≔ (ctr_{st}) ∈ R^{np}$$
+
+Für die Fälle, in denen auf die durchschnittliche CTR verwiesen wird, soll das arithmetische Mittel aller Elemente des Vektors $CTR$ gemeint sein. Die durchschnittliche Seiten-CTR ist als $\overline{CTR}$ gekennzeichnet und in Formel 8 erfasst.
+
+*Formel 8: Definition der Durchschnitts-CTR*
+$$\overline{CTR}:=  \frac{(ctr_{11} + ctr_{12} + … + ctr_{1p} + … +  ctr_{n1} + … + ctr_{np})}{np}$$
+
+Während die Kennzahl CTR die Akzeptanz eines Werbemittels durch Webseitenbesu-cher beschreibt, stellt die Kennzahl CPC (Cost per Click) grundsätzlich einen Indikator für den Preis dar, den ein Werbekunde für einen Klick auf dessen Anzeigen zu zahlen bereit ist. Der tatsächlich bezahlte Preis pro Klick kann dabei je nach Werbemittel, Nutzergruppen, Zeit, Platzierung oder weiteren Variablen stark variieren.  Die Preise werden in der Regel automatisiert durch ein WerbeNetzwerk im Gebotsverfahren berechnet. 
+
+Die Kennzahl CPC definiert sich allgemein aus dem Verhältnis von Klicks auf Werbemittel, die auf einer bestimmten Seiten-URL $s$ platziert sind, zu den Erlösen $e$, die daraus in einer bestimmten Periode $t$ resultieren. Sie kann analog zur Kennzahl $ctr_{st}$ für alle $s=1,…,n$  und $t=1,…,p$ gebildet werden und definiert sich gemäß Formel 9.
+
+*Formel 9: Definition der Kennzahl CPC*
+$$cpc_{st}≔\frac{e_{st}}{c_{st}} $$
+
+Die einzelnen Elemente von $e_{st}$ lassen sich analog zur Bildung von $V$ und $C$ als Vektor $E≔(e_{11}, e_{12} ,… , e_{1p} ,… , e_{n1},… , e_{np}) ∈ R^{np}$ formulieren. 
+Aus Sicht eines Webseitenanbieters ist die Kennzahl CPC nur im Kontext mehrerer Beobachtungen (d. h. mehrerer Klicks) sinnvoll, da die Einzelwerte je nach Bieter-situation stark schwanken können. Analog zur Matrix CTR kann auch hier eine Matrix CPC mittels aller Elemente von cpc_st für s=1,…,n  und t=1,…,p gebildet werden. Folglich ergibt sich die Vektorisierung dieser Matrix ebenfalls analog zu Formel 10.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
 #Match Website-URLs with Amazon Affiliate Tracking IDs
 
-Idea: Scrape Website and associate URLs with Tracking ID indicated as "tag=..." in outgoing links.
+# Idea: Scrape Website and associate URLs with Tracking ID indicated as "tag=..." in outgoing links.
 
 ##Read a Sitemap to fetch all URLs a website has for scraping
-```{r}
 
 if (file.exists("data/html_urls.rds")) {
   
