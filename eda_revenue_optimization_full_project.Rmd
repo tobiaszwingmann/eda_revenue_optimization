@@ -1,8 +1,8 @@
 ---
-title: "Anwendung explorativer Datenanalyse zur Identifikation von Optimierungspotenzialen hinsichtlich des Umsatzes am Beispiel eines On-line-Publishers mit Affiliate-Ansatz""
+title: "Anwendung explorativer Datenanalyse zur Identifikation von Optimierungspotenzialen hinsichtlich des Umsatzes am Beispiel eines On-line-Publishers mit Affiliate-Ansatz"
 author: "Tobias Zwingmann"
 date: "9 1 2019"
-output: github_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -110,7 +110,7 @@ Anschließend soll die Arbeit auch im Kontext des erworbenen Spezialisten-Zertif
 
 # 3.1 Business Understanding
 
-# 3.1.1 Affiliate Marketing als Geschäftsmodell
+## 3.1.1 Affiliate Marketing als Geschäftsmodell
 
 Unter „Affiliate-Marketing“ wird allgemein ein auf Online-Kooperationen basierendes Marketing- und Vertriebskonzept im Bereich des E-Business verstanden (Vgl. Kollmann, T. (2011), S. 299.).  Affiliate-Marketing ist als Spezialbereich des Online-Marketings zu betrachten (Vgl. Jurišová, V. (2013), S. 5.). 
 
@@ -156,22 +156,22 @@ Die Anzahl der Aufrufe einer bestimmten Seiten-URL in einer festgelegten Periode
 Matrizen werden nachfolgend mit fettgedruckten Großbuchstaben symbolisiert.
 
 *Formel 1: Definition der Matrix* $\mathbf{V}$
-$$\mathbf{V}∶=(v_{st})_{s=1,…,n;t=1,…,p}  ∈ R^{n×p}$$
+$$\mathbf{V}∶=(v_{st})_{s=1,…,n;t=1,…,p} ∈ \mathbb{R}^{n×p}$$
 
 Vektoren sollen nachfolgend als nicht-fettgedruckte Großbuchstaben dargestellt werden. Die Matrix $\mathbf{V}$ kann durch Vektorisierung auch als Vektor $V$ ausgedrückt werden. Die Vektorisierung von $\mathbf{V}$ ist in Formel 2 festgelegt.
 
 *Formel 2: Definition der Vektorisierung der Matrix* $\mathbf{V}$
-$$V:= vect(\mathbf{V}) := (v_{11}, v_{12}, … , v_{1p}, … , v_{n1}, … , v_{np}) ∈ R^{np}$$
+$$V:= vect(\mathbf{V}) := (v_{11}, v_{12}, … , v_{1p}, … , v_{n1}, … , v_{np})∈ \mathbb{R}^{np}$$
 
 Die in einer Periode $t$ erzielten Klicks auf ein oder mehrere Werbemittel einer bestimmten Seiten-URL $s$ sollen mit $c_{st}$ bezeichnet werden. Auch hier wird die Gesamtheit aller Klicks pro Webseite und Periode innerhalb eines Beobachtungszeitraums als Matrix mit $n × p$ Elementen definiert. Die Definition der Matrix $\mathbf{C}$ ergibt sich analog zur Matrix $\mathbf{V}$ in Formel 3.
 
 *Formel 3: Definition der Matrix* $\mathbf{C}$
-$$\mathbf{C}∶=(c_{st})_{s=1,…,n;t=1,…,p}  ∈ R^{n×p}$$
+$$\mathbf{C}∶=(c_{st})_{s=1,…,n;t=1,…,p} ∈ \mathbb{R}^{n×p}$$
 
 Analog zu $\mathbf{V}$ und $V$ kann auch hier eine Vektorisierung der Matrix vorgenommen werden. Die Vektorisierung von $\mathbf{C}$ ist in Formel 4 dargestellt. 
 
 *Formel 4: Definition der Vektorisierung von* $\mathbf{C}$
-$$C:= vect(\mathbf{C}) := (c_{11}, c_{12}, … , c_{1p}, … , c_{n1}, … , c_{np}) ∈ R^{np}$$
+$$C:= vect(\mathbf{C}) := (c_{11}, c_{12}, … , c_{1p}, … , c_{n1}, … , c_{np})∈ \mathbb{R}^{np}$$
 
 Aus Sicht eines Webseitenbetreibers misst die Klickrate CTR allgemein, wie oft ein Werbemittel im Verhältnis zu dessen Einblendungen angeklickt wird. Der Klick auf ein bezahltes Werbemittel kann in diesem Kontext auch als Konversion interpretiert werden. Die Kennzahl CTR lässt sich sowohl auf einzelne Werbemittel als auch auf eine ganze Seiten-URL anwenden. Im vorliegenden Fallbeispiel soll die Interpretation der Seiten-CTR verwendet werden, welche die Leistung aller Werbemittel auf einer Seiten-URL misst. Hintergrund ist, dass nicht die Leistungssteigerung einzelner Werbebanner im Vordergrund steht, sondern die Identifikation von seitenübergreifenden Optimierungspotenzialen. Entsprechend dazu ist die Kennzahl der Seiten-CTR in Formel 5 notiert für $s=1,…,n$  und $t=1,…,p$.
 
@@ -181,12 +181,12 @@ $$ctr_{st} ≔  \frac{c_{st}}{v_{st}}$$
 Die Matrix $\mathbf{CTR}$ soll alle Einzelwerte der $n$ Seiten-CTR in den $p$ Perioden beinhalten und ist in Formel 6 definiert.
 
 *Formel 6: Definition der Matrix* $\mathbf{CTR}$
-$$\mathbf{CTR}∶=(ctr_{st})_{s=1,…,n;t=1,…,p} ∈ R^{n×p}$$
+$$\mathbf{CTR}∶=(ctr_{st})_{s=1,…,n;t=1,…,p}∈ \mathbb{R}^{n×p}$$
 
 Der Vektor $CTR$ stellt auch hier die Vektorisierung von $\mathbf{CTR}$ dar und ist in Formel 7 dargelegt.
 
 *Formel 7: Definition der Vektorisierung der* $\mathbf{CTR}$
-$$CTR ≔ vect(\mathbf{CTR}) ≔(ctr_{11}, ctr_{12} ,… , ctr_{1p} ,… , ctr_{n1} ,… , ctr_{np})≔ (ctr_{st}) ∈ R^{np}$$
+$$CTR ≔ vect(\mathbf{CTR}) ≔(ctr_{11}, ctr_{12} ,… , ctr_{1p} ,… , ctr_{n1} ,… , ctr_{np})≔ (ctr_{st})∈ \mathbb{R}^{np}$$
 
 Für die Fälle, in denen auf die durchschnittliche CTR verwiesen wird, soll das arithmetische Mittel aller Elemente des Vektors $CTR$ gemeint sein. Die durchschnittliche Seiten-CTR ist als $\overline{CTR}$ gekennzeichnet und in Formel 8 erfasst.
 
@@ -200,22 +200,189 @@ Die Kennzahl CPC definiert sich allgemein aus dem Verhältnis von Klicks auf Wer
 *Formel 9: Definition der Kennzahl CPC*
 $$cpc_{st}≔\frac{e_{st}}{c_{st}} $$
 
-Die einzelnen Elemente von $e_{st}$ lassen sich analog zur Bildung von $V$ und $C$ als Vektor $E≔(e_{11}, e_{12} ,… , e_{1p} ,… , e_{n1},… , e_{np}) ∈ R^{np}$ formulieren. 
-Aus Sicht eines Webseitenanbieters ist die Kennzahl CPC nur im Kontext mehrerer Beobachtungen (d. h. mehrerer Klicks) sinnvoll, da die Einzelwerte je nach Bieter-situation stark schwanken können. Analog zur Matrix CTR kann auch hier eine Matrix CPC mittels aller Elemente von cpc_st für s=1,…,n  und t=1,…,p gebildet werden. Folglich ergibt sich die Vektorisierung dieser Matrix ebenfalls analog zu Formel 10.
+Die einzelnen Elemente von $e_{st}$ lassen sich analog zur Bildung von $V$ und $C$ als Vektor $E≔(e_{11}, e_{12} ,… , e_{1p} ,… , e_{n1},… , e_{np})∈ \mathbb{R}^{np}$ formulieren. 
+
+Aus Sicht eines Webseitenanbieters ist die Kennzahl CPC nur im Kontext mehrerer Beobachtungen (d. h. mehrerer Klicks) sinnvoll, da die Einzelwerte je nach Bietersituation stark schwanken können. Analog zur Matrix $\mathbf{CTR}$ kann auch hier eine Matrix $\mathbf{CPC}$ mittels aller Elemente von $cpc_{st}$ für $s=1,…,n$  und $t=1,…,p$ gebildet werden. Folglich ergibt sich die Vektorisierung dieser Matrix ebenfalls analog zu Formel 10.
+
+*Formel 10: Definition der Vektorisierung der Matrix* $\mathbf{CPC}$
+$$CPC ≔ vect(\mathbf{CPC}) ≔(cpc_{11}, cpc_{12} ,… , cpc_{1p} ,… , cpc_{n1} ,… , cpc_{np})≔ (cpc_{st})∈ \mathbb{R}^{np}$$
+
+Zur Bestimmung der Leistungsfähigkeit einer Webseite werden in der Regel CPC-Mittelwerte über mehrere Perioden gebildet.  Das als $\overline{CPC}$ definierte arithmetische Mittel der Elemente von $CPC$ bestimmt sich analog zu $\overline{CTR}$ und ist in Formel 11 dargestellt.
+
+*Formel 11: Definition der Durchschnitts-CPC*
+$$\overline{CPC}:=  \frac{(cpc_{11} + cpc_{12} + … + cpc_{1p} + … +  cpc_{n1} + … + cpc_{np})}{np}$$
+
+Der Gesamtumsatz einer Website mit PPC-Ansatz entspricht letztlich den kumulierten Erlösen aus allen Werbemittel-Klicks. Unter Verwendung der zuvor genannten Kennzahlen lässt sich jedoch der Gesamtumsatz auch als Summe für $k=np$ Seitenaufrufe innerhalb eines Beobachtungszeitraums, multipliziert mit der hierin erzielten durchschnittlichen CTR und den durchschnittlichen CPC über alle Seiten und über alle Werbemittel, wie in Formel 12 dargestellt, berechnen:
+
+*Formel 12: Berechnung des Umsatzes im PPC-Ansatz*
+$$U≔\left( \sum_{(i=1)}^kV_i \right) \overline{CTR} × \overline{CPC} )$$
+
+Unter der Annahme, dass die seitenweite durchschnittliche CTR und die durchschnittlichen CPC konstant bleiben, führt ein Anstieg der Seitenaufrufe zu einem 
+höheren Gesamtumsatz. Gleichfalls erhöht sich der Umsatz auch dann, wenn bei konstanten Seitenaufrufen die durchschnittliche CTR oder die durchschnittlichen CPC oder beide Kennzahlen gleichzeitig gesteigert werden. 
+
+Die Systematik der Umsatzermittlung bei Webseiten mit PPS-Ansatz ist hierzu fast identisch. Der wesentliche Unterschied liegt lediglich in der Substitution der Kennzahl CPC durch die Kenngröße Revenue-per-Click (RPC). RPC gibt die Höhe der vermittelten Netto-Umsätze im Verhältnis zu den Klicks auf ein oder mehrere Werbemittel an.  
+
+Die Höhe der Netto-Umsätze, die in einer bestimmten Periode $t$ durch Klicks auf die auf einer Seite $s$ platzierten Werbemittel generiert wurden, sollen im Folgenden als  $r_{st}$ bezeichnet werden. Somit ergibt sich auch hier analog zu $c_{st}$ eine $n × p$ Matrix, welche die Netto-Umsätze über mehrere ($n$) Seiten-URLs in einer fest definierten Anzahl ($p$) von Perioden enthält. Diese Matrix soll mit $\mathbf{R}$ gekennzeichnet werden und ist in Formel 13 definiert.
+
+*Formel 13: Definition der Matrix* $\mathbf{R}$
+$$\mathbf{R}∶=(r_{st})_{s=1,…,n;t=1,…,p} ∈ \mathbb{R} ^{n×p}$$
+
+Die Vektorisierung dieser Matrix erfolgt analog zu den vorherigen Definitionen und soll als Vektor $R$ bezeichnet werden. 
+
+*Formel 14: Definition der Vektorisierung von* $\mathbf{R}$
+$$R ≔ vect(\mathbf{R}) ≔(r_{11}, r_{12} ,… , r_{1p} ,… , r_{n1} ,… , r_{np})≔ (r_{st})∈ \mathbb{R}^{np}$$
+
+Die Kennzahl RPC ergibt sich entsprechend der Berechnung der CPC als Quotient der durch die Werbemittel einer Seite $s$ vermittelten Netto-Umsätze und der Anzahl der Klicks auf die dieser Seite zugeordneten Werbemittel in einer bestimmten Periode $t$. Somit gilt wie auch für den Umsatz pro Klick (RPC) die Definition in Formel 15 für $s=1,…,n$  und $t=1,…,p$.
+
+*Formel 15: Definition der Kennzahl RPC*
+$$rpc_{st}≔\frac{r_{st}}{c_{st}} $$
+
+Die Matrix RPC ergibt sich entsprechend der Formel 16.
+*Formel 16: Definition der Matrix* $\mathbf{RPC}$
+$$\mathbf{RPC}∶=(rpc_{st})_{s=1,…,n;t=1,…,p}∈ \mathbb{R}^{n×p}$$
+
+Auch hier soll die Vektorisierung der Matrix definiert werden, sodass alle Elemente von $\mathbf{RPC}$ auch in Form eines Vektors $RPC$ dargestellt werden können. Die Vektorisierung ist in Formel 17 formuliert.
+*Formel 10: Definition der Vektorisierung der Matrix* $\mathbf{RPC}$
+$$RPC ≔ vect(\mathbf{RPC}) ≔(rpc_{11}, rpc_{12} ,… , rpc_{1p} ,… , rpc_{n1} ,… , rpc_{np})≔ (rpc_{st})∈ \mathbb{R}^{np}$$
+
+Der durchschnittliche RPC definiert sich ebenfalls als das arithmetische Mittel aller Elemente des Vektors $RPC$. Die Berechnung der Kennzahl RPC ist in Formel 18 dargestellt.
+
+*Formel 18: Definition des Durchschnitts-RPC*
+$$\overline{RPC}:=  \frac{(rpc_{11} + rpc_{12} + … + rpc_{1p} + … +  rpc_{n1} + … + rpc_{np})}{np}$$
+Der Gesamterlös eines Affiliates ergibt sich aus der Verrechnung des vermittelten Umsatzes mit der jeweils individuell durch den Merchant festgelegten Provisionsrate. (Je nach Merchant und Provisionsmodell werden einzelne Produkte oder Produktkategorien unterschiedlich vergütet. Da es hier eine Vielzahl von Ausprägungen gibt und die Aussagen dazu praktisch nicht zu verallgemeinern sind, soll die Provisionsrate an dieser Stelle nicht weiter berücksichtigt werden. Sie lässt sich jedoch bei Bedarf einfach als Multiplikationsfaktor der RPC-Kennzahl ergänzen.) Die RPC-Kennzahl kann isoliert (d. h. ohne Provisionsbetrachtung) als inhaltliches Äquivalent zur CPC-Kennzahl verstanden werden, da sie ebenfalls Auskunft über den Wert eines Werbemittels gibt. Lässt man die Provisionsberechnung außen vor, kann der durch einen Affiliate vermittelte Gesamtumsatz auch wie in Formel 19 folgt notiert werden:
+
+*Formel 19: Berechnung des Umsatzes im PPS-Ansatz*
+$$U≔\left( \sum_{(i=1)}^kV_i \right) \overline{CTR} × \overline{RPC} )$$
+
+Im Gegensatz zur CPC- kann die RPC-Kennzahl grundsätzlich auch Null betra-gen.  Dieser Fall tritt dann ein, wenn zwar Klicks auf ein Werbemittel stattfanden, aber keine Einkäufe beim Merchant getätigt wurden. Im PPC-Ansatz würde ein Werbemittel genau dann automatisch nicht mehr eingeblendet werden, wenn kein Werbebudget dafür bereitsteht oder kein Angebot platziert wurde. Im PPS-Ansatz ist also zusätzlich zur ersten Konversion (Klick auf ein Werbemittel) eine Konversion auf zweiter Ebene (Einkauf beim Merchant) notwendig, um Umsätze zu generieren. 
+
+Zusammenfassend lässt sich feststellen, dass die Kennzahlen CTR und CPC (bzw. im PPS-Ansatz RPC) sehr gut zur Analyse von Umsatzoptimierungen eingesetzt werden könnten, da sie unabhängig voneinander optimierbar sind und dabei ebenso unterschiedliche Handlungsfelder bedienen. Die Kennzahlen sind zudem relativ robust, leicht interpretierbar und gut auf unterschiedliche Sachverhalte übertragbar – unabhängig vom gewählten Erlösmodell. Robuste Verfahren zur Umsatzoptimierung lassen sich daher bei PPC-Modellen auf der Optimierung der CTR- und CPC-Kennzahl sowie bei PPS-Modellen auf einer Optimierung der CTR- und RPC-Kennzahl basierend, aufbauen.
 
 
+## 3.1.3 Hintergründe zum konkreten Fallbeispiel
+
+Das im Rahmen dieser Arbeit vorgestellte Fallbeispiel ist eine Online-Projekt, dessen Geschäftsmodell hauptsächlich auf einem Affiliate-Ansatz beruht. Der Verfasser der vorliegenden Arbeit ist gleichzeitig Betreiber der Webseite und verfügt damit über uneingeschränkten Zugriff auf die Leistungsdaten des Projektes.
+
+Das hier vorgestellte Projekt trägt den Titel „HDMI Guru“ und wird im Folgenden kurz als „Webseite“ bezeichnet. Die Webseite wurde im Februar 2012 unter der Domain www.welches-hdmi-kabel.de registriert und dient seither als Plattform für die Veröffentlichung von deutschsprachigen Inhalten zu Themen der Unterhaltungselektronik. Im August 2016 umfasste der Webauftritt insgesamt 50 Artikel, die in unregelmäßigen Abständen veröffentlicht wurden. Inhaltlich fokussiert sich das Angebot auf Blogbeiträge und Ratgeber-Artikel zum Themenkomplex der HDMI-Schnittstelle, dem aktuellen de-facto Standard zur Verkabelung im Heimkinobereich.  Jährlich greifen rund 800.000 Besucher auf das Angebot zu.  
+
+Aufgrund der hohen thematischen Spezialisierung und der relativ überschaubaren Reichweite kann diese Seite auch als typischer Vertreter eines Nischenwebseiten-Konzeptes angesehen werden. Abbildung 4 zeigt exemplarisch die Startseite des Fallbeispiels.
+
+```{r}
+# Abbildung 4: Screenshot der Startseite des Fallbeispiels
+```
+
+Das Geschäftsmodell der Webseite basiert im Wesentlichen auf einem Affiliate-Ansatz. Rund 90 % der Umsätze werden über das deutschsprachige Partnerprogramm von Amazon.de generiert. Hierüber werden an Amazon vermittelte Einkäufe in den Ländern Deutschland, Österreich und der Schweiz abgedeckt. 
+
+Die übrigen rund 10 % der Einnahmen generieren sich durch Pay-Per-Click Werbeeinblendungen, die vom Google-Adsense-Netzwerk bereitgestellt werden.
+
+Im Zeitraum 01. September 2015 bis 31. August 2016 wurden so mithilfe des Amazon Partnerprogramms rund 28.000 Produkte im Gesamtwert von rund 470.000 Euro (Netto-Umsatz) vermittelt. 
+
+Aufgrund der hohen Relevanz des Amazon-Partnerprogramms für den Geschäftserfolg der vorgestellten Affiliate-Webseite soll dieses Programm nachfolgend in den wesentlichen Grundzügen erläutert werden:
+
+Das Amazon Partnerprogramm bietet Betreibern von Webseiten eine Möglichkeit, nachvollziehbare Links zum Produktsortiment von Amazon.de zu generieren und diese dann auf der Betreiber-Webseite einzubinden. Kauft ein Besucher bei Amazon ein, nachdem er über einen solchen Partner-Link auf das Angebot von Amazon.de gelangt ist, so erhält der Affiliate eine Provision auf den Gesamtwert des vermittelten Warenkorbs. 
+
+Dabei werden alle Käufe, die innerhalb von 24 Stunden nach Klick des Affiliate-Links getätigt werden, vergütet. Die Nachverfolgung geschieht über das Setzen eines sogenannten Tracking-Cookies. Die Identifizierung eines Affiliate-Links erfolgt über das Hinzufügen eines URL-Parameters in Form einer sogenannten „Tracking-ID“.
+
+Ein Publisher kann mehrere Tracking-IDs zur Identifizierung unterschiedlicher Webseiten einsetzen. Die Provisionssätze unterscheiden sich je nach Produktkategorie und betragen zwischen 1 % bis maximal 10 % des Nettobestellwerts. Vergütet werden nur sogenannte „qualifizierte Bestellungen“, das umfasst im Wesentlichen Bestellungen, die nicht durch den Affiliate selbst getätigt wurden und die nicht durch den Käufer retourniert wurden.  
+
+Die Teilnahme am Amazon-Partnerprogramm ist für Webseitenbetreiber kostenlos. Statistiken zur Leistungsfähigkeit des Programms können durch den Affiliate über das Analyse- und Abrechnungstool „Amazon PartnerNet“ erstellt werden. Abbildung 5 zeigt exemplarisch ein Bildschirmfoto des Amazon PartnerNets.
+
+```{r}
+# Abbildung 5: Screenshot Amazon PartnerNet
+```
 
 
+Die Besucher des Fallbeispiels werden hauptsächlich über Suchmaschinenmarketing akquiriert: Rund 85 % der Webseitenbesucher erreichen das Angebot über die organische Suche von Google.de. Rund 12 % der Besucher gelangen per Direkt-zugriff auf die Seite. Weitere 3 % gelangen über Verweise von anderen Webseiten oder sozialen Netzwerken auf das Angebot. 
+
+Das Grundkonzept der Webseite verfolgt dabei die Idee, dass Internetnutzer ein bestimmtes Thema im Bereich der HDMI-Thematik über Google.de recherchieren. 
+
+Ziel ist es nun, zu dieser bestimmten Suchanfrage eine möglichst gute Platzierung in den organischen Suchergebnissen von Google.de zu erreichen und den Besucher zielgerichtet auf die eigene Seite zu lenken. Dort sollte der Besucher dann nicht nur die nachgefragten Informationen, sondern außerdem Verweise bzw. Empfehlungen zu Produkten vorfinden, die für die Problemlösung hilfreich sind. 
+
+Dies sind in der Regel Verweise auf Kabel, Adapter oder weitere Elektronikzubehörartikel. Die entsprechenden Produkt-Links wurden zuvor manuell über das Amazon-Partnerprogramm generiert und in die einzelnen Ratgeber-Artikel eingefügt. 
+
+In Abbildung 6 ist beispielhaft die Platzierung der Seiten-URLs des Fallbeispiels in den organischen Suchergebnissen der deutschsprachigen Google-Suche dargestellt. 
+
+```{r}
+# Abbildung 6: Beispielplatzierung des Fallbeispiels in den Suchergebnissen der deutschsprachigen Google-Suche
+```
+
+Zur Messung der Webseiten-Metriken wird das kostenlose und zugleich weit verbreitete Tool „Google Analytics“ eingesetzt. Über Google Analytics werden unter anderem Zugriffe auf einzelne Beiträge (Artikel) über die jeweiligen (im Zeitverlauf gleichbleibenden) Artikel-URLs ausgewertet. 
+
+Das Tracking der Affiliate-Performance wird über sogenannte Tracking-IDs realisiert. Dabei wird für jede Unterseite (d. h. für jeden Beitrag) eine einzigartige Tracking-ID erstellt, die an die ausgehenden Produkt-Links zu Amazon übergeben wird. Über diese Tracking-ID lässt sich im Amazon Partnerprogramm sehen, welche Unterseite wie viele Klicks und wie viele Produkte erzielt hat. 
+
+Die im Amazon PartnerNet hinterlegten Tracking-IDs stellen somit einen eindeutigen inhaltlichen Bezug zu den einzelnen Seiten-URLs in Google Analytics her und können als Schlüssel angesehen werden, der Daten aus Google Analytics und Amazon Partnernet verknüpft.
+
+Als Untersuchungszeitraum wird der zum Zeitpunkt des Beginns dieser Arbeit aktuellste Zwölfmonatszeitraum vorgegeben. Dies entspricht dem 01. Januar 2015 bis 31. August 2016.
+
+# 3.2 Data Understanding
+
+Die zur Analyse des Fallbeispiels benötigten Daten werden von zwei unterschiedlichen Quellen bereitgestellt: Besucherzahlen werden über das Tool Google Analytics erhoben, Daten zu Klicks und vermittelten Umsätzen über das Amazon PartnerNet.
+
+Die Daten aus Google Analytics werden in Form von kommagetrennten Text-Dateien (CSV) angeliefert. Google Analytics generiert pro Seiten-URL eine CSV-Datei für einen individuell einstellbaren Zeitraum. Im Fallbeispiel wurden somit XXXX unterschiedliche CSV-Dateien für jeweils den gleichen Zeitraum zwischen XX-XX-XXXX und XX-XX-XXXX generiert. Der Aufbau der CSV-Dateien ist identisch. Jede CSV-Datei enthält einen sogenannten Header-Bereich, der aggregierte Informationen und Metadaten zur aktuellen Datei anzeigt, und den eigentlichen Datenbereich, der zwei Spalten (Datum und Seitenaufrufe) zum ausgewählten Zeitraum umfasst. Ein Auszug aus der Export-CSV-Datei für die Seiten-URL http://www.welches-hdmi-kabel.de/hdmi-kabel-unterschiede/ ist in Abbildung 14 dargestellt.
+
+```{r}
+#Abbildung 14: Auszug einer Export-Datei (CSV) aus Google Analytics
+```
+
+Um Informationen zu Klicks und Umsätzen zu erhalten, müssen zwei verschiede-ne Berichte aus dem Amazon PartnerNet generiert werden. 
+
+Der sogenannte Tracking-ID-Kurzbericht enthält Informationen zur Summe der Klicks, die jeweils über die einzelnen Tracking-IDs des Partners im Berichtzeitraum generiert wurden. Die Tracking-ID-Kurzberichte werden als Tabstopp-getrennte Textdateien angeliefert und enthalten eine wöchentliche Zusammenfassung der Daten. Im Fallbeispiel ergibt dies XX Textdateien für die definierten zwölf Berichtsmonate.
+
+Die Textdateien sind identisch aufgebaut und erhalten neben den Angaben zu Klicks auch Informationen zu den in der jeweiligen Woche für die einzelnen Tracking-IDs generierten Bestellungen. Abbildung 15 zeigt einen Auszug für den Tracking-ID-Kurzbericht des Zeitraums XX-XX-XXXX bis XX-XX-XXXX.
+
+```{r}
+#Abbildung 15: Auszug einer Export-Datei (TXT) eines Tracking-ID-Kurzberichts aus dem Amazon PartnerNet
+
+```
+
+Die benötigten Informationen zu den vermittelten Umsätzen werden nicht in die Tracking-ID-Kurzberichte exportiert. Hierzu muss ein sogenannter „Werbekosten-Erstattungsbericht“ erstellt werden. Der Werbekosten-Erstattungsbericht wird in Form einer XML-Datei angeliefert, die Informationen zu allen im Berichtszeitraum vermittelten Produkten enthält, inklusive der daraus resultierenden Umsätze und Provisionen (Werbekostenerstattung). Auch sind Informationen zum jeweiligen Bestelldatum und zur jeweiligen Tracking-ID, über die der Umsatz generiert wurde, integriert. Der Werbekosten-Erstattungsbericht für den Berichtszeitraum ist damit der umfangreichste angelieferte Datensatz bezüglich des Fallbeispiels, er umfasst XX.XXXX Datenreihen mit 15 Dimensionen. Die für die explorativen Analysen relevanten Dimensionen sind: 
+
+- ASIN (Produkt-ID), 
+- Category (Produktkategorie), 
+- Date (Versanddatum), 
+- DeviceType (Mobil oder Desktop), 
+- Price (Nettopreis des Produktes), 
+- Qty. (Anzahl der bestellten Produkte), 
+- Revenue (Netto-Umsatz), 
+- Earnings (Provision) sowie
+- Tag (Tracking-ID).
+
+Ein Auszug des Werbekosten-Erstattungsberichts ist in Abbildung 16 dargestellt.
+
+```{r}
+#Abbildung 16: Auszug einer Export-Datei (XML) eines Werbekosten-Erstattungsberichts aus dem Amazon PartnerNet
+```
 
 
+# 3.3 Data Preparation
+
+Die angelieferten Rohdaten aus Google Analytics und dem Amazon PartnerNet enthalten teilweise unterschiedlich formatierte und auch unerwünschte Datensätze, die vor der Analyse bearbeitet werden müssen. 
+
+Zur Datenvorbereitung sowie für alle weiteren Datenanalysen wird die frei erhältliche Software R in der Version 3.3.1 in Verbindung mit der Entwicklungsumgebung RStudio (Version 0.99.903) verwendet.
+
+Im ersten Schritt werden mittels der Funktion gsub alle Zahlen in ein einheitliches Format in Bezug auf Tausendertrennzeichen und Kommasymbol gebracht. Anschließend werden alle Datumsfelder einheitlich im Format JJJJ-MM-TT kodiert. Zusätzlich wird per strftime-Funktion zu jedem Datum automatisch die entsprechende Kalenderwoche ergänzt.
+
+Einige Datenexporte enthalten Informationen zu unerwünschten Tracking-IDs, beispielsweise Tracking-IDs, die für Testprojekte oder durch externe Partner genutzt wurden. Datensätze mit Informationen zu diesen Tracking-IDs werden über die gsub-Funktion gelöscht.
+
+Des Weiteren sollen nur Umsätze analysiert werden, die nicht retourniert wurden. Entsprechend wurden alle Umsätze, die ein Rücksende-Kennzeichen haben, aus dem Werbekosten-Erstattungs-Datensatz entfernt.
+
+Die Datumsvorgabe des Berichtszeitraums (01.09.2015 – 31.08.2016) führt dazu, dass die Kalenderwochen am Anfang und am Ende des Berichtszeitraums unvollständig sind. Um später bei einer Analyse auf Basis von Kalenderwochen nur vollständige Kalenderwochen zu berücksichtigen, werden jeweils die erste und die letzte Kalenderwoche als unvollständig gekennzeichnet.
+
+Die im vorangegangenen Kapitel beschriebenen Daten sollen zur Auswertung und Analyse in unterschiedliche Teilmengen (Subsets) überführt werden. Aufgrund der heterogenen Struktur und der unterschiedlichen Granularität der Ursprungsdaten sind hierfür verschiedene Zwischenschritte notwendig. 
+
+Die maximale Granularität in Bezug auf das Zeitmerkmal, die von allen drei Ursprungsdatensätzen unterstützt wird, ist die Betrachtung auf Basis von Kalenderwochen. Diese soll daher für weitere Analysen als höchste Granularitätsstufe dienen. Zur Verdeutlichung werden zwei Beispiele illustriert: Die Variable $c_{st}$ bezeichnet beispielsweise die für eine bestimmte Seiten-URL (= Tracking-ID) $s$ erzielten Klicks in Kalenderwoche $t$. Der Vektor R beinhaltet die wöchentlich vermittelten Netto-Umsätze jeder einzelnen Seiten-URL im Betrachtungszeitraum.
+
+Das Zieldatenmodell für die weitere Analyse umfasst im Wesentlichen die Bildung der in Tabelle 2 aufgeführten Subsets. Einige Subsets setzen die Integration unterschiedlicher Rohdatenquellen in ein neues Datenset voraus. 
+
+Zur Lösung des Entitäts-Identifizierungsproblems dient hierbei der Abgleich der Seiten-URL aus Google Analytics mit der Tracking-ID aus dem Amazon PartnerNet. [hier detailierter]. Die vollständige Dokumentation der Bildung der Subsets ist dem dieser Arbeit beiliegenden R-Quellcode zu entnehmen.
 
 
+Hier sollte das finale Datenset beschrieben werden, dass nach Integration der Quelldaten bereitsteht. Vorher sollten die Zwischensteps (daten aus GA, Amazon 2x auch irgendwo beschrieben sein.)
 
 
+#3.4 Explorative Datenanalyse
 
-
-
-
+Beginnt mit Kapitel 3.2. "Um ein allgemeines Verständnis zu bekommen...."
 
 
 
