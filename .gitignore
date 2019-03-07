@@ -2,3 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
+.DS_Store
+data/Amazon*
+data/Google*
+data/.gitignore
+data/html_urls.rds
+data/pageviews_tbl.rds
