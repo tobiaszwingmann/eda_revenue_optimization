@@ -263,7 +263,7 @@ Zusammenfassend lässt sich feststellen, dass die Kennzahlen CTR und CPC (bzw. i
 
 Das im Rahmen dieser Arbeit vorgestellte Fallbeispiel ist eine Online-Projekt, dessen Geschäftsmodell hauptsächlich auf einem Affiliate-Ansatz beruht. Der Verfasser der vorliegenden Arbeit ist gleichzeitig Betreiber der Webseite und verfügt damit über uneingeschränkten Zugriff auf die Leistungsdaten des Projektes.
 
-Das hier vorgestellte Projekt trägt den Titel „HDMI Guru“ und wird im Folgenden kurz als „Webseite“ bezeichnet. Die Webseite wurde im Februar 2012 unter der Domain www.welches-hdmi-kabel.de registriert und dient seither als Plattform für die Veröffentlichung von deutschsprachigen Inhalten zu Themen der Unterhaltungselektronik. Im August 2016 umfasste der Webauftritt insgesamt 50 Artikel, die in unregelmäßigen Abständen veröffentlicht wurden. Inhaltlich fokussiert sich das Angebot auf Blogbeiträge und Ratgeber-Artikel zum Themenkomplex der HDMI-Schnittstelle, dem aktuellen de-facto Standard zur Verkabelung im Heimkinobereich.  Jährlich greifen rund 800.000 Besucher auf das Angebot zu.  
+Das hier vorgestellte Projekt trägt den Titel „HDMI Guru“ und wird im Folgenden kurz als „Webseite“ bezeichnet. Die Webseite wurde im Februar 2012 unter der Domain https://www.welches-hdmi-kabel.de registriert und dient seither als Plattform für die Veröffentlichung von deutschsprachigen Inhalten zu Themen der Unterhaltungselektronik. Im August 2016 umfasste der Webauftritt insgesamt 50 Artikel, die in unregelmäßigen Abständen veröffentlicht wurden. Inhaltlich fokussiert sich das Angebot auf Blogbeiträge und Ratgeber-Artikel zum Themenkomplex der HDMI-Schnittstelle, dem aktuellen de-facto Standard zur Verkabelung im Heimkinobereich.  Jährlich greifen rund 800.000 Besucher auf das Angebot zu.  
 
 Aufgrund der hohen thematischen Spezialisierung und der relativ überschaubaren Reichweite kann diese Seite auch als typischer Vertreter eines Nischenwebseiten-Konzeptes angesehen werden. Abbildung 4 zeigt exemplarisch die Startseite des Fallbeispiels.
 
@@ -313,6 +313,251 @@ Das Tracking der Affiliate-Performance wird über sogenannte Tracking-IDs realis
 Die im Amazon PartnerNet hinterlegten Tracking-IDs stellen somit einen eindeutigen inhaltlichen Bezug zu den einzelnen Seiten-URLs in Google Analytics her und können als Schlüssel angesehen werden, der Daten aus Google Analytics und Amazon Partnernet verknüpft.
 
 Als Untersuchungszeitraum wird der zum Zeitpunkt des Beginns dieser Arbeit aktuellste Zwölfmonatszeitraum vorgegeben. Dies entspricht dem 01. Januar 2015 bis 31. August 2016.
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# 0. Preprocessing - Aufbau der Datensets ----
+
+# Match Website-URLs with Amazon Affiliate Tracking IDs
+
+# Idea: Scrape Website and associate URLs with Tracking ID indicated as "tag=..." in outgoing links.
+
+##Read a Sitemap to fetch all URLs a website has for scraping
+
+if (file.exists("data/html_urls.rds")) {
+  
+  html_urls <- read_rds("data/html_urls.rds")
+
+} else {
+  
+#Folgenden Code nur ausführen, wenn kein rds vorhanden ist:
+
+ sitemap <- read_xml("https://www.welches-hdmi-kabel.de/sitemap.xml")
+ # This sitemap is nested so we have to get all sitemaps first
+
+ sitemap_urls <- sitemap %>%
+   xml_children() %>%
+   xml_text() %>%
+   str_replace_all(".xml.*", ".xml")
+
+ sitemap_urls <- sitemap_urls[-1]
+
+ html_urls = tibble("value" = character())
+
+ n = length(sitemap_urls)
+
+ #We iterate through each sitemap and extract the URLs starting with https:...
+ for (i in 1:n ){
+   html_urls <- rbind(html_urls,
+   sitemap_urls[i] %>%
+   read_xml() %>%
+   xml_children() %>%
+   xml_children() %>%
+   xml_text() %>%
+   as_tibble() %>%
+   filter(str_detect(value, 'https:'))
+ )
+   }
+ write_rds(html_urls, "data/html_urls.rds")
+}
+
+# Scrape the URLs from the sitemap for Amazon Affiliate Tag. If found, write into table and link to the resp. URL. Count the number of occurences of outgoing links per Website. 
+
+#Scrape Webseiten nach Amazon Affiliate Tag
+
+if (file.exists("data/matched_tags_to_url.rds")) {
+
+  matched_tags_to_url <- read_rds("data/matched_tags_to_url.rds")
+
+} else {
+
+ matched_tags_to_url = tibble("Tag" = character(),
+                         "n" = integer(),
+                         "URL" = character())
+
+ n = nrow(html_urls)
+
+ j = 1L
+
+ for (i in 1:n) {
+
+   url <-  html_urls[[1]][i]
+
+   parsed_url_links <-
+     url %>%
+     read_html() %>%
+     html_nodes("body") %>%
+     html_nodes("a") %>%
+     html_attr("href") %>%
+     as.tibble()
+
+    if(nrow(parsed_url_links %>% filter(str_detect(value, "tag="))) > 0) {
+     #Code wird nur ausgeführt, wenn ein ausgehender Link mit Tag= auf der Webseite zu finden ist:
+      matched_tags_to_url[j,] <-
+       parsed_url_links %>%
+       filter(str_detect(value, "tag=")) %>%
+       mutate(Tag = str_extract(value, "tag=.*-21")) %>%
+       mutate(Tag = str_remove(Tag, "tag=")) %>%
+       group_by(Tag) %>%
+       count %>%
+       mutate(URL = url)
+      j <- j+1L
+    }
+
+ }
+ rm(parsed_url_links, url, j, i, n)
+ 
+ #Für solche Fälle, in denen eine URL einen Tag enthält, der nicht über Amazon Partnernet getrackt wird (z.B. Amazon US-Programm, entsteht ein NA. Diese hier ausschließen für weitere Analyse.)
+ matched_tags_to_url <- matched_tags_to_url %>% 
+   filter(!is.na(Tag))
+
+  write_rds(matched_tags_to_url, "data/matched_tags_to_url.rds")
+
+}
+
+
+# 1. Umsätze (Orders) von Amazon----
+fee_orders_xml <- read_xml("data/Amazon Orders 18.12.2017 - 16.12.2018/1549029224178-Fee-Orders-7a68a8a6-7342-4f73-a750-3e26a56c5147-XML.xml")
+
+fee_orders_xml <-
+  fee_orders_xml %>% 
+  xml_children() %>% 
+  xml_children() %>% 
+  xml_attrs()
+
+fee_orders_tbl <-
+  fee_orders_xml %>%
+  as.data.frame() %>% 
+  t %>% 
+  as_tibble(row.names=F)
+
+rm(fee_orders_xml)
+
+#Aggregiere Bestellungen auf Tagesebene
+fee_orders_daily_tbl <-
+  fee_orders_tbl %>% 
+  mutate(Datum = parse_date_time(Datum, "Ymd HMS")) %>% 
+  mutate(Datum = as.Date(Datum)) %>% 
+  mutate(Preis = as.numeric(str_replace(Preis, ",", ".")),
+         Menge = as.integer(Menge)) %>%
+  mutate(Umsatz = Preis * Menge) %>% 
+  group_by(Tag, Datum) %>% 
+  summarise(Umsatz = sum(Umsatz)) %>% 
+  mutate(CW = get_cw_and_year_from_date(Datum))
+
+fees_weekly_tbl <- fee_orders_daily_tbl %>% 
+  group_by(Tag, CW) %>%
+  summarise(Umsatz = sum(Umsatz))
+
+
+# 2. Klicks auf Amazon Partnerlinks ----
+file.names <- list.files("data/Amazon Klicks 18.12.2017 - 16.12.2018/")
+path.names <- paste0("data/Amazon Klicks 18.12.2017 - 16.12.2018/", file.names)
+
+clicks_tbl <- tibble(
+  "Tracking-ID" = character(),
+  "Klicks" = numeric(),
+  "Artikel bestellt" = numeric(),
+  "Artikel geliefert" = numeric(),
+  "Umsatz (€)" = numeric(),
+  "Ad Gebühren (€)"  = numeric()
+  )
+
+clicks_tbl <- map_df(path.names, bind_clicks_csv_to_tbl) #Diese Tabelle enthält noch keine Angaben zum Datum
+
+clicks_date_tbl <- map_df(path.names, bind_click_dates_csv_to_tbl) #Diese Tabelle enthält nur Datum und Dateiname
+
+clicks_weekly_tbl <-
+  clicks_tbl %>% 
+  left_join(clicks_date_tbl) %>% 
+  separate(Range, c("Start", "End"), " to ") %>% 
+  select(-File) %>% 
+  mutate(Start = mdy(Start),
+         End = mdy(End),
+         CW = get_cw_and_year_from_date(Start),
+         CW_check = get_cw_and_year_from_date(End),
+         DaysInWeek = End - Start + 1
+         )%>% 
+  arrange(CW) %>%
+  rename(Tag = `Tracking-ID`)
+
+# Sanity Checks: Die einzelnen CSV-Files wurden manuell aus dem Amazon Partnernet generiert.
+# Hier wird geprüft, ob Start- und Enddatum des jeweiligen CSV-Files in der gleichen Kalenderwoche sind und ob
+# jede Kalenderwoche aus 7 Einzeltagen besteht.
+
+if (all(clicks_weekly_tbl$CW == clicks_weekly_tbl$CW_check) & all(clicks_weekly_tbl$DaysInWeek == 7)) {
+  clicks_weekly_tbl <- 
+    clicks_weekly_tbl %>% 
+    group_by(Tag, CW) %>% 
+    summarise(Klicks = sum(Klicks))
+} else {
+  print("Prüfe Rohdaten im Ordner Amazon Klicks")
+}
+
+# 3. Pageviews from Google Analytics ----
+file.names <- list.files("data/Google Analytics 01.12.2017 - 31.12.2018/")
+path.names <- paste0("data/Google Analytics 01.12.2017 - 31.12.2018/", file.names)
+
+pageviews_tbl <- tibble(
+  "Page path level 1" = character(),
+  "Date" = character(),
+  "Pageviews" = character(),
+  "Unique Pageviews" = character(),
+  "Avg. Time on Page" = character(),
+  "Bounce Rate" = character(),
+  "% Exit" = character()
+  )
+
+
+pageviews_tbl <- map_df(path.names, bind_pageview_csv_to_tbl)
+#Parsing Fehler verursacht durch CSV-Format, welches eigentlich 2 Berichte in einer Datei enthält
+
+#Clean up data frame 
+pageviews_tbl <- pageviews_tbl %>% 
+  filter(!is.na(`Page path level 1`)) %>% 
+  filter(!is.na(Date)) %>% 
+  mutate(URL = str_remove(`Page path level 1`, "/$")) %>% #Entferne Slashes am Ende
+  filter(str_detect(URL, "^/")) %>% 
+  mutate(Pageviews = str_remove(Pageviews, ","),
+         Pageviews = as.numeric(Pageviews)) %>% 
+  group_by(URL, Date) %>%
+  summarise(Pageviews = sum(Pageviews)) %>%
+  ungroup() %>% 
+  mutate(URL = paste0("https://www.welches-hdmi-kabel.de",URL)) %>% 
+  mutate(CW = get_cw_and_year_from_date(ymd(Date)))
+
+pageviews_weekly_tbl <- 
+  pageviews_tbl %>% 
+  group_by(URL, CW) %>% 
+  summarize(Pageviews = sum(Pageviews))
+
+# 4. Join Views, Klicks and Revenues into one dataframe ----
+
+# Kleinster Granularitätsfaktor: Kalenderwoche Tag und URL
+date_range <- fees_weekly_tbl$CW %>% unique() %>% sort
+
+weekly_raw_tbl <-
+  expand(matched_tags_to_url, Tag, date_range ) %>%  #Basis Dataframe mit jeder Kombination aus Tag und CW in Daterange
+  rename(CW = date_range) %>% 
+  left_join(matched_tags_to_url) %>%
+  mutate(URL = str_remove(URL, "/$")) %>% 
+  left_join(pageviews_weekly_tbl, by=c("URL", "CW")) %>% 
+  left_join(clicks_weekly_tbl, by=c("CW", "Tag")) %>% 
+  left_join(fees_weekly_tbl, by=c("CW", "Tag")) %>%
+  mutate(Pageviews = replace_na(Pageviews, 0),
+         Klicks = replace_na(Klicks, 0),
+         Umsatz = replace_na(Umsatz, 0)) %>% 
+  mutate(Umsatz = replace_na(Umsatz, 0)) %>% 
+  group_by(Tag, CW) %>% 
+  summarise(Pageviews = sum(Pageviews),
+            Klicks = sum(Klicks),
+            Umsatz = sum(Umsatz)) %>%
+  ungroup() %>% 
+  mutate(CTR = ifelse(Pageviews == 0, 0, round(Klicks / Pageviews,4))) %>% 
+  mutate(RPC = ifelse(Klicks == 0, 0, round(Umsatz / Klicks, 4)))
+
+write_rds(weekly_raw_tbl, "data/weekly_raw_tbl.rds")
+
+```
 
 # 3.2 Data Understanding
 
@@ -370,7 +615,7 @@ Die Datumsvorgabe des Berichtszeitraums (01.09.2015 – 31.08.2016) führt dazu,
 
 Die im vorangegangenen Kapitel beschriebenen Daten sollen zur Auswertung und Analyse in unterschiedliche Teilmengen (Subsets) überführt werden. Aufgrund der heterogenen Struktur und der unterschiedlichen Granularität der Ursprungsdaten sind hierfür verschiedene Zwischenschritte notwendig. 
 
-Die maximale Granularität in Bezug auf das Zeitmerkmal, die von allen drei Ursprungsdatensätzen unterstützt wird, ist die Betrachtung auf Basis von Kalenderwochen. Diese soll daher für weitere Analysen als höchste Granularitätsstufe dienen. Zur Verdeutlichung werden zwei Beispiele illustriert: Die Variable $c_{st}$ bezeichnet beispielsweise die für eine bestimmte Seiten-URL (= Tracking-ID) $s$ erzielten Klicks in Kalenderwoche $t$. Der Vektor R beinhaltet die wöchentlich vermittelten Netto-Umsätze jeder einzelnen Seiten-URL im Betrachtungszeitraum.
+Die maximale Granularität in Bezug auf das Zeitmerkmal, die von allen drei Ursprungsdatensätzen unterstützt wird, ist die Betrachtung auf Basis von Kalenderwochen. Diese soll daher für weitere Analysen als maximale Granularitätsstufe dienen. Zur Verdeutlichung werden zwei Beispiele illustriert: Die Variable $c_{st}$ bezeichnet beispielsweise die für eine bestimmte Seiten-URL (= Tracking-ID) $s$ erzielten Klicks in Kalenderwoche $t$. Der Vektor R beinhaltet die wöchentlich vermittelten Netto-Umsätze jeder einzelnen Seiten-URL im Betrachtungszeitraum.
 
 Das Zieldatenmodell für die weitere Analyse umfasst im Wesentlichen die Bildung der in Tabelle 2 aufgeführten Subsets. Einige Subsets setzen die Integration unterschiedlicher Rohdatenquellen in ein neues Datenset voraus. 
 
@@ -382,279 +627,12 @@ Hier sollte das finale Datenset beschrieben werden, dass nach Integration der Qu
 
 #3.4 Explorative Datenanalyse
 
-Beginnt mit Kapitel 3.2. "Um ein allgemeines Verständnis zu bekommen...."
+Um zunächst ein allgemeines Verständnis über die Beschaffenheit und Verteilung der Daten zu bekommen, soll die allgemeine Struktur- und Häufigkeitsverteilung der Merkmale Seitenaufrufe, Klicks und Umsätze untersucht werden, ohne konkreten Bezug zu weiteren Kennzahlen. Die Untersuchungen dienen dazu, Besonderheiten in der Datenverteilung zu identifizieren und diese vor weiteren Analysen ggf. zu bearbeiten. 
 
+Zunächst wird die Verteilung der kumulierten wöchentlichen Seitenaufrufe ($V$), Klicks ($C$) und Umsätze ($R$) grafisch untersucht:
 
-
-```{r}
-#Match Website-URLs with Amazon Affiliate Tracking IDs
-
-# Idea: Scrape Website and associate URLs with Tracking ID indicated as "tag=..." in outgoing links.
-
-##Read a Sitemap to fetch all URLs a website has for scraping
-
-if (file.exists("data/html_urls.rds")) {
-  
-  html_urls <- read_rds("data/html_urls.rds")
-
-} else {
-  
-#Folgenden Code nur ausführen, wenn kein rds vorhanden ist:
-
- sitemap <- read_xml("https://www.welches-hdmi-kabel.de/sitemap.xml")
- # This sitemap is nested so we have to get all sitemaps first
-
- sitemap_urls <- sitemap %>%
-   xml_children() %>%
-   xml_text() %>%
-   str_replace_all(".xml.*", ".xml")
-
- sitemap_urls <- sitemap_urls[-1]
-
- html_urls = tibble("value" = character())
-
- n = length(sitemap_urls)
-
- #We iterate through each sitemap and extract the URLs starting with https:...
- for (i in 1:n ){
-   html_urls <- rbind(html_urls,
-   sitemap_urls[i] %>%
-   read_xml() %>%
-   xml_children() %>%
-   xml_children() %>%
-   xml_text() %>%
-   as_tibble() %>%
-   filter(str_detect(value, 'https:'))
- )
-   }
- write_rds(html_urls, "data/html_urls.rds")
-}
-
-
-```
-
-##Scrape the URLs from the sitemap for Amazon Affiliate Tag. If found, write into table and link to the resp. URL. Count the number of occurences of outgoing links per Website. 
-```{r}
-#Scrape Webseiten nach Amazon Affiliate Tag
-
-if (file.exists("data/matched_tags_to_url.rds")) {
-
-  matched_tags_to_url <- read_rds("data/matched_tags_to_url.rds")
-
-} else {
-
- matched_tags_to_url = tibble("Tag" = character(),
-                         "n" = integer(),
-                         "URL" = character())
-
- n = nrow(html_urls)
-
- j = 1L
-
- for (i in 1:n) {
-
-   url <-  html_urls[[1]][i]
-
-   parsed_url_links <-
-     url %>%
-     read_html() %>%
-     html_nodes("body") %>%
-     html_nodes("a") %>%
-     html_attr("href") %>%
-     as.tibble()
-
-    if(nrow(parsed_url_links %>% filter(str_detect(value, "tag="))) > 0) {
-     #Code wird nur ausgeführt, wenn ein ausgehender Link mit Tag= auf der Webseite zu finden ist:
-      matched_tags_to_url[j,] <-
-       parsed_url_links %>%
-       filter(str_detect(value, "tag=")) %>%
-       mutate(Tag = str_extract(value, "tag=.*-21")) %>%
-       mutate(Tag = str_remove(Tag, "tag=")) %>%
-       group_by(Tag) %>%
-       count %>%
-       mutate(URL = url)
-      j <- j+1L
-    }
-
- }
- rm(parsed_url_links, url, j, i, n)
- 
- #Für solche Fälle, in denen eine URL einen Tag enthält, der nicht über Amazon Partnernet getrackt wird (z.B. Amazon US-Programm, entsteht ein NA. Diese hier ausschließen für weitere Analyse.)
- matched_tags_to_url <- matched_tags_to_url %>% 
-   filter(!is.na(Tag))
-
-  write_rds(matched_tags_to_url, "data/matched_tags_to_url.rds")
-
-}
-
-```
-
-
-# Umsätze (Orders) von Amazon
-```{r}
-#Umsätze
-fee_orders_xml <- read_xml("data/Amazon Orders 18.12.2017 - 16.12.2018/1549029224178-Fee-Orders-7a68a8a6-7342-4f73-a750-3e26a56c5147-XML.xml")
-
-fee_orders_xml <-
-  fee_orders_xml %>% 
-  xml_children() %>% 
-  xml_children() %>% 
-  xml_attrs()
-
-fee_orders_tbl <-
-  fee_orders_xml %>%
-  as.data.frame() %>% 
-  t %>% 
-  as_tibble(row.names=F)
-
-rm(fee_orders_xml)
-
-#Aggregiere Bestellungen auf Tagesebene
-fee_orders_daily_tbl <-
-  fee_orders_tbl %>% 
-  mutate(Datum = parse_date_time(Datum, "Ymd HMS")) %>% 
-  mutate(Datum = as.Date(Datum)) %>% 
-  mutate(Preis = as.numeric(str_replace(Preis, ",", ".")),
-         Menge = as.integer(Menge)) %>%
-  mutate(Umsatz = Preis * Menge) %>% 
-  group_by(Tag, Datum) %>% 
-  summarise(Umsatz = sum(Umsatz)) %>% 
-  mutate(CW = get_cw_and_year_from_date(Datum))
-
-fees_weekly_tbl <- fee_orders_daily_tbl %>% 
-  group_by(Tag, CW) %>%
-  summarise(Umsatz = sum(Umsatz))
-
-```
-
-## Klicks auf Amazon Partnerlinks
-```{r}
-file.names <- list.files("data/Amazon Klicks 18.12.2017 - 16.12.2018/")
-path.names <- paste0("data/Amazon Klicks 18.12.2017 - 16.12.2018/", file.names)
-
-clicks_tbl <- tibble(
-  "Tracking-ID" = character(),
-  "Klicks" = numeric(),
-  "Artikel bestellt" = numeric(),
-  "Artikel geliefert" = numeric(),
-  "Umsatz (€)" = numeric(),
-  "Ad Gebühren (€)"  = numeric()
-  )
-
-clicks_tbl <- map_df(path.names, bind_clicks_csv_to_tbl) #Diese Tabelle enthält noch keine Angaben zum Datum
-
-clicks_date_tbl <- map_df(path.names, bind_click_dates_csv_to_tbl) #Diese Tabelle enthält nur Datum und Dateiname
-
-clicks_weekly_tbl <-
-  clicks_tbl %>% 
-  left_join(clicks_date_tbl) %>% 
-  separate(Range, c("Start", "End"), " to ") %>% 
-  select(-File) %>% 
-  mutate(Start = mdy(Start),
-         End = mdy(End),
-         CW = get_cw_and_year_from_date(Start),
-         CW_check = get_cw_and_year_from_date(End),
-         DaysInWeek = End - Start + 1
-         )%>% 
-  arrange(CW) %>%
-  rename(Tag = `Tracking-ID`)
-
-# Sanity Checks: Die einzelnen CSV-Files wurden manuell aus dem Amazon Partnernet generiert.
-# Hier wird geprüft, ob Start- und Enddatum des jeweiligen CSV-Files in der gleichen Kalenderwoche sind und ob
-# jede Kalenderwoche aus 7 Einzeltagen besteht.
-
-if (all(clicks_weekly_tbl$CW == clicks_weekly_tbl$CW_check) & all(clicks_weekly_tbl$DaysInWeek == 7)) {
-  clicks_weekly_tbl <- 
-    clicks_weekly_tbl %>% 
-    group_by(Tag, CW) %>% 
-    summarise(Klicks = sum(Klicks))
-} else {
-  print("Prüfe Rohdaten im Ordner Amazon Klicks")
-}
-```
-
-
-# Pageviews from Google Analytics
-```{r message=FALSE, warning=FALSE}
-
-file.names <- list.files("data/Google Analytics 01.12.2017 - 31.12.2018/")
-path.names <- paste0("data/Google Analytics 01.12.2017 - 31.12.2018/", file.names)
-
-pageviews_tbl <- tibble(
-  "Page path level 1" = character(),
-  "Date" = character(),
-  "Pageviews" = character(),
-  "Unique Pageviews" = character(),
-  "Avg. Time on Page" = character(),
-  "Bounce Rate" = character(),
-  "% Exit" = character()
-  )
-
-
-pageviews_tbl <- map_df(path.names, bind_pageview_csv_to_tbl)
-#Parsing Fehler verursacht durch CSV-Format, welches eigentlich 2 Berichte in einer Datei enthält
-
-#Clean up data frame 
-pageviews_tbl <- pageviews_tbl %>% 
-  filter(!is.na(`Page path level 1`)) %>% 
-  filter(!is.na(Date)) %>% 
-  mutate(URL = str_remove(`Page path level 1`, "/$")) %>% #Entferne Slashes am Ende
-  filter(str_detect(URL, "^/")) %>% 
-  mutate(Pageviews = str_remove(Pageviews, ","),
-         Pageviews = as.numeric(Pageviews)) %>% 
-  group_by(URL, Date) %>%
-  summarise(Pageviews = sum(Pageviews)) %>%
-  ungroup() %>% 
-  mutate(URL = paste0("https://www.welches-hdmi-kabel.de",URL)) %>% 
-  mutate(CW = get_cw_and_year_from_date(ymd(Date)))
-
-pageviews_weekly_tbl <- 
-  pageviews_tbl %>% 
-  group_by(URL, CW) %>% 
-  summarize(Pageviews = sum(Pageviews))
-
-```
-
-##Zusammenführen von Views, Klicks und Umsätzen in ein einheitliches Datenset
-```{r}
-# Kleinster Granularitätsfaktor: Kalenderwoche Tag und URL
-date_range <- fees_weekly_tbl$CW %>% unique() %>% sort
-
-weekly_raw_tbl <-
-  expand(matched_tags_to_url, Tag, date_range ) %>%  #Basis Dataframe mit jeder Kombination aus Tag und CW in Daterange
-  rename(CW = date_range) %>% 
-  left_join(matched_tags_to_url) %>%
-  mutate(URL = str_remove(URL, "/$")) %>% 
-  left_join(pageviews_weekly_tbl, by=c("URL", "CW")) %>% 
-  left_join(clicks_weekly_tbl, by=c("CW", "Tag")) %>% 
-  left_join(fees_weekly_tbl, by=c("CW", "Tag")) %>%
-  mutate(Pageviews = replace_na(Pageviews, 0),
-         Klicks = replace_na(Klicks, 0),
-         Umsatz = replace_na(Umsatz, 0)) %>% 
-  mutate(Umsatz = replace_na(Umsatz, 0)) %>% 
-  group_by(Tag, CW) %>% 
-  summarise(Pageviews = sum(Pageviews),
-            Klicks = sum(Klicks),
-            Umsatz = sum(Umsatz)) %>%
-  ungroup() %>% 
-  mutate(CTR = ifelse(Pageviews == 0, 0, round(Klicks / Pageviews,4))) %>% 
-  mutate(RPC = ifelse(Klicks == 0, 0, round(Umsatz / Klicks, 4)))
-
-
-write_rds(weekly_raw_tbl, "data/weekly_raw_tbl.rds")
-
-weekly_raw_tbl %>% 
-  head()
-
-```
-
-
-
-# Exploration
-
-## Wöchentliche Trends allgemein
-### ... nach Seitenaufrufen
-```{r}
+### Wöchentliche Seitenaufrufe über alle Seiten-URLS im Zeitverlauf
+```{r echo=FALSE}
 #Data Transformation
 weekly_raw_tbl %>% 
   select(CW, Pageviews) %>% 
@@ -671,7 +649,12 @@ weekly_raw_tbl %>%
   
 ```
 
-### ... nach Klicks
+Hier ist zu erkennen, dass die Seitenaufrufe im Verlauf des Jahres 2018 zunächst abnahmen, ausgehend von einem Höhepunkt in der KW 52 des Jahres 2017. Ab circa Mitte 2018 stabilisierten sich die Seitenaufrufe wieder und nahmen gegen Ende des Jahres wieder zu.
+
+Die hohen Seitenaufrufe in den Wintermonaten könnten ein Indikator für das in diesem Zeitraum anlaufende Weihnachtsgeschäft sein. Die Weihnachtsfeiertage liegen in der Regel in KW51 - KW52. 
+
+
+### Wöchentliche Klicks über alle Seiten-URLS im Zeitverlauf
 ```{r}
 #Data Transformation
 weekly_raw_tbl %>% 
@@ -689,7 +672,7 @@ weekly_raw_tbl %>%
   
 ```
 
-### ... nach Umsätzen
+### Wöchentliche Umsätze über alle Seiten-URLS im Zeitverlauf
 ```{r}
 #Data Transformation
 weekly_raw_tbl %>% 
