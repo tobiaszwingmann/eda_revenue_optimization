@@ -653,7 +653,6 @@ Hier ist zu erkennen, dass die Seitenaufrufe im Verlauf des Jahres 2018 zunächs
 
 Die hohen Seitenaufrufe in den Wintermonaten könnten ein Indikator für das in diesem Zeitraum anlaufende Weihnachtsgeschäft sein. Die Weihnachtsfeiertage liegen in der Regel in KW51 - KW52. 
 
-
 ### Wöchentliche Klicks über alle Seiten-URLS im Zeitverlauf
 ```{r}
 #Data Transformation
@@ -671,6 +670,7 @@ weekly_raw_tbl %>%
   expand_limits(y=0)
   
 ```
+Die Entwicklung der kumulierten Klicks je Kalenderwoche ähnelt der Entwicklung der Seitenaufrufe sehr stark. Hier wird ebenfalls das Maximum in KW 52 erreicht. Die Darstellung ist insofern bezüglich der Abbildung der Seitenaufrufe plausibel, als dass ohne Seitenaufrufe keine Klicks generiert werden können.
 
 ### Wöchentliche Umsätze über alle Seiten-URLS im Zeitverlauf
 ```{r}
@@ -689,9 +689,11 @@ weekly_raw_tbl %>%
   expand_limits(y=0)
   
 ```
+Die wöchentliche Umsatzentwicklung im Zeitverlauf zeigt einen wesentlichen Unterschied im Vergleich zu den beiden vorherigen Darstellungen. Zum wird das Maximum nicht in KW 52, sondern in KW 1 erreicht, zum anderen gibt es einen zweiten Ausreißer nach oben, der in KW 47 stattfindet.
 
-## Seitenaufrufe, Umsätze, Klicks in einem Chart
-Erkenntnis: Alle dre Variablen korrelieren miteinander, der Umsatz bricht aber nicht so stark ein, wie die anderen Werte (Klicks)
+Zur genaueren Untersuchung werden Seitenaufrufe, Klicks und Umsätze in einem Chart dargestellt:
+
+### Wöchentliche Seitenaufrufe, Klicks und Umsätze über alle Seiten-URLS im Zeitverlauf
 ```{r}
 weekly_raw_tbl %>% 
   select(CW, Pageviews, Klicks, Umsatz) %>% 
@@ -715,9 +717,11 @@ weekly_raw_tbl %>%
         legend.position = "bottom") +
   expand_limits(y=0)
 ```
+Aus dieser Betrachtung ergeben sich zwei zentrale Erkenntnisse: Einerseits korrelieren alle drei Werte miteinander, Seitenaufrufe und Klicks sehr stark und der Verlauf der Umsätze deutlich andere Ausreißer nach oben. 
 
+Der Grund hierfür liegt vor allem in der Berechnungssystematik der Umsätze durch den Merchant Amazon. Als Umsätze werden grundsätzlich nur Waren gezählt, die tatsächlich an den Besteller verschickt wurden. An Sonntagen findet generell (mit der Ausnahme von digitalen Gütern) kein Versand statt. Die Abweichung zwischen Bestell- (Klick) und Versanddatum (Umsatz) kann somit durchaus ein bis zwei Tage umfassen und damit in unterschiedliche Kalenderwochen fallen:
 
-#Analyse der Umsätze und Seitenaufrufe für Wochentage
+#### Analyse der Umsätze und Seitenaufrufe für Wochentage
 ```{r}
 #Temporary Tables for Join
 a = pageviews_tbl %>% 
@@ -746,11 +750,26 @@ left_join(a, b, by="Wochentag") %>%
   geom_bar(position="dodge", stat="identity")
   
 ```
+Die Abbildung zeigt, dass Umsätze am stärksten Montags generiert werden, wohingegen Seitenaufre vermehrt am Wochenende stattfinden. Der hohe Umsatz an Montagen ist jedoch vor allem auch auf die Bestellungen an Wochenende zurückzuführen, die Montags versand werden.
 
+# 3.5 Analyse der Klickraten
 
-## Analyse der Kennzahlen CTR und RPC
+Zur Analyse der ersten Konversionsebene soll das Klickverhalten in Bezug auf die Seitenaufrufe untersucht werden (Click-Through-Rate). 
 
-Wir sind interessiert an einem Benchmark der Kennzahlen CTR und RPC. Die erste Frage: Gibt es innerhalb dieser Kennzahlen überhaupt Varianz und wenn ja wie stark ist diese ausgeprägt?
+Hierzu ist es zunächst hilfreich, ein Verständnis davon zu entwickeln wie sich Klicks nicht nur im Zeitverlauf, sondern auch über einzelne Seiten-URLs verteilen. Dabei hilft folgender Boxplot:
+
+```{r}
+clicks_weekly_tbl %>% 
+  ungroup %>% 
+  mutate(Tag=fct_reorder(Tag, Klicks, .desc = T)) %>% 
+  ggplot(aes(x=Tag, y= Klicks)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+```
+Durch diese Grafik wird deutlich, dass ein paar wenige Seiten-URLs die meisten Klicks absolut generieren. Dementsprechend weist die Verteilung einen Tail auf, der viele URLs umfasst, aber in Summe wenig Klicks generiert. Diese Erkenntnis ist für die spätere Benchmark-Modellierung relevant und muss entsprechend berücksichtigt werden.
+
+Um weitere Aussagen über die Performance der CTR treffen zu können, muss zunächst analysiert werden, inwiefern überhaupt eine Varianz  
 
 ### Verteilung der CTR insgesamt
 Einschränkung: Seitenaufrufe mindestens 50 (hier: pro Woche). Sonst keine verlässlichen Zahlen möglich.
