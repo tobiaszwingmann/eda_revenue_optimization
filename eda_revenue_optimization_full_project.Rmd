@@ -5,6 +5,7 @@ date: "9 1 2019"
 output: 
   pdf_document: 
     latex_engine: xelatex
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -656,7 +657,7 @@ Hier ist zu erkennen, dass die Seitenaufrufe im Verlauf des Jahres 2018 zunächs
 Die hohen Seitenaufrufe in den Wintermonaten könnten ein Indikator für das in diesem Zeitraum anlaufende Weihnachtsgeschäft sein. Die Weihnachtsfeiertage liegen in der Regel in KW51 - KW52. 
 
 ### Wöchentliche Klicks über alle Seiten-URLS im Zeitverlauf
-```{r}
+```{r echo=FALSE}
 #Data Transformation
 weekly_raw_tbl %>% 
   select(CW, Klicks) %>% 
@@ -675,7 +676,7 @@ weekly_raw_tbl %>%
 Die Entwicklung der kumulierten Klicks je Kalenderwoche ähnelt der Entwicklung der Seitenaufrufe sehr stark. Hier wird ebenfalls das Maximum in KW 52 erreicht. Die Darstellung ist insofern bezüglich der Abbildung der Seitenaufrufe plausibel, als dass ohne Seitenaufrufe keine Klicks generiert werden können.
 
 ### Wöchentliche Umsätze über alle Seiten-URLS im Zeitverlauf
-```{r}
+```{r echo=FALSE}
 #Data Transformation
 weekly_raw_tbl %>% 
   select(CW, Umsatz) %>% 
@@ -696,7 +697,7 @@ Die wöchentliche Umsatzentwicklung im Zeitverlauf zeigt einen wesentlichen Unte
 Zur genaueren Untersuchung werden Seitenaufrufe, Klicks und Umsätze in einem Chart dargestellt:
 
 ### Wöchentliche Seitenaufrufe, Klicks und Umsätze über alle Seiten-URLS im Zeitverlauf
-```{r}
+```{r echo=FALSE}
 weekly_raw_tbl %>% 
   select(CW, Pageviews, Klicks, Umsatz) %>% 
   group_by(CW) %>% 
@@ -724,7 +725,7 @@ Aus dieser Betrachtung ergeben sich zwei zentrale Erkenntnisse: Einerseits korre
 Der Grund hierfür liegt vor allem in der Berechnungssystematik der Umsätze durch den Merchant Amazon. Als Umsätze werden grundsätzlich nur Waren gezählt, die tatsächlich an den Besteller verschickt wurden. An Sonntagen findet generell (mit der Ausnahme von digitalen Gütern) kein Versand statt. Die Abweichung zwischen Bestell- (Klick) und Versanddatum (Umsatz) kann somit durchaus ein bis zwei Tage umfassen und damit in unterschiedliche Kalenderwochen fallen, was in der folgenden Abbildung deutlich wird.
 
 #### Analyse der Umsätze und Seitenaufrufe für Wochentage
-```{r}
+```{r echo=FALSE}
 #Temporary Tables for Join
 a = pageviews_tbl %>% 
   mutate(Wochentag = weekdays(ymd(Date))) %>% 
@@ -756,13 +757,13 @@ Die Abbildung zeigt, dass Umsätze am stärksten Montags generiert werden, wohin
 
 # 3.5 Analyse der Klickraten
 
-# 3.5.1 Analyse der Verteilung
+# 3.5.1 Analyse der CTR-Verteilung
 
 Zur Analyse der ersten Konversionsebene soll das Klickverhalten in Bezug auf die Seitenaufrufe untersucht werden (Click-Through-Rate). 
 
 Hierzu ist es zunächst hilfreich, ein Verständnis davon zu entwickeln wie sich Klicks nicht nur im Zeitverlauf, sondern auch über einzelne Seiten-URLs verteilen. Dabei hilft folgender Boxplot:
 
-```{r}
+```{r echo=FALSE}
 clicks_weekly_tbl %>% 
   ungroup %>% 
   mutate(Tag=fct_reorder(Tag, Klicks, .desc = T)) %>% 
@@ -775,8 +776,8 @@ Durch diese Grafik wird deutlich, dass ein paar wenige Seiten-URLs die meisten K
 
 Um weitere Aussagen über die Performance der CTR treffen zu können, muss zunächst analysiert werden, inwiefern überhaupt eine Varianz innerhalb der Daten vorliegt.
 
-```{r}
-CTR_mean <- weekly_raw_tbl %>% filter(Pageviews >= 50) %>% select(CTR) %>% unlist %>% mean
+```{r echo=FALSE}
+CTR_mean <- weekly_raw_tbl %>% filter(Pageviews >= 70) %>% select(CTR) %>% unlist %>% mean
 
 weekly_raw_tbl %>%
   select(CTR) %>%
@@ -787,7 +788,7 @@ Betrachtet man diese ungefilterte Darstellung werden vor allem zwei Dinge deutli
 
 Beide Extremfälle sind für die Ableitung von Benchmarks wenig hilfreich. Daher wird die Verteilung unter der Bedingung analysiert, dass eine Seiten-URL innerhalb einer Woche mindestens 10 Aufrufe pro Tag, das heißt 70 Aufrufe pro Woche erreicht hat. Unterhalb dieser Grenze sind keine Verlässlichen Aussagen möglich.
 
-```{r}
+```{r echo=FALSE}
 CTR_mean <- weekly_raw_tbl %>% filter(Pageviews >= 70) %>% select(CTR) %>% unlist %>% mean
 
 weekly_raw_tbl %>%
@@ -800,7 +801,7 @@ weekly_raw_tbl %>%
 Berücksichtigt man diese Bedingung, ergibt sich ein etwas aussagelkräftigeres Bild. Zum einen existiert eine relativ starke Varianz, das heißt die CTR streut relativ breit um den Mittelwert `r round(CTR_mean, 2)`. Offensichtlich ist der Mittelwert zudem kein optimales Lagemaß, da die Daten nicht normal verteilt sind.
 
 Schwankt die CTR in Abhängigkeit von der Zeit? Diese Frage beantwortet folgende Abbildung:
-```{r}
+```{r echo=FALSE}
 weekly_raw_tbl %>%
   filter(Pageviews >= 70) %>% 
   select(CTR, CW) %>%
@@ -809,16 +810,18 @@ weekly_raw_tbl %>%
   geom_hline(yintercept = CTR_mean) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
-Das Ergebnis: Nein, der CTR-Mittelwert pro Kalenderwoche ist über den Zeitverlauf gesehen relativ konstant. Hier schein kein Muster vorzuliegen.
+Das Ergebnis: Nein, der CTR-Mittelwert pro Kalenderwoche ist über den Zeitverlauf gesehen relativ konstant. Hier scheint kein belastbares Muster vorzuliegen.
 
-Schankt die CTR nach Seiten-URL, performen also manche Seiten besser als andere?
-```{r}
+Schwankt die CTR nach Seiten-URL, performen also manche Seiten besser als andere?
+```{r echo=FALSE, warning=TRUE}
 tag_id_order <- weekly_raw_tbl %>%
   filter(Pageviews >= 70) %>%
-  select(Tag, Pageviews) %>% 
+  select(Tag, Pageviews, CW) %>% 
   group_by(Tag) %>% 
-  summarize(Pageviews = sum(Pageviews)) %>%
-  arrange(desc(Pageviews)) %>% 
+  summarize(Pageviews = sum(Pageviews),
+            AnzahlWochen = length(unique(CW))) %>%
+  mutate(PageviewsPerWeek = Pageviews / AnzahlWochen) %>% 
+  arrange(desc(PageviewsPerWeek)) %>% 
   select(Tag) %>% 
   unlist
 
@@ -836,7 +839,7 @@ Die Erkenntnis: Ja, die CTR variiert sehr stark nach Seiten-URL. Der geringste C
 
 Abschließen soll betrachtet werden, inwiefern die CTR im Vergleich zu den absoluten Seitenaufrufen schwankt. Bleibt die CTR auch bei steigenden Seitenaufrufen konstant? Zur Verdeutlichung wird der direkte Zusammenhang zwischen Klicks und Seitenaufrufen visualisiert. Bliebe die CTR jeweils konstant, müsste die Verteilung durch eine einfache Regressionsgerade modelliert werden können.
 
-```{r}
+```{r echo=FALSE}
 weekly_raw_tbl %>%
   filter(Pageviews >= 70) %>% 
   select(Klicks, Pageviews) %>%
@@ -848,7 +851,7 @@ Die Erkenntnis: Gunrdsätzlich existiert tatsächlich ein linearer Zusammenhang 
 
 Das Ziel der Analyse ist es, einen geeigneten Benchmark für die Kennzahl CTR abzuleiten. Aus diesem Grund soll die Datengruppe mit schlechterer Performance gezielt ausgeschlossen werden. Um diese Daten mit schlechter Performance zu markieren, soll eine Clusteranalyse durchgeführt werden.  
 
-```{r}
+```{r echo=FALSE}
 ctr_df <- weekly_raw_tbl %>%
   filter(Pageviews > 70) %>% 
   select(Klicks, Pageviews, CTR, Tag) %>% 
@@ -871,7 +874,7 @@ Als Clusteralgorithmus wird k-Means verwendet. Als Zielclusterannahme wird k = 1
 
 Nun ist es ein leichtes, die durchschnittliche CTR pro Cluster zu berechnen und die Cluster mit den jeweils geringsten CTR-Medianen als Low-Performer zu markieren.
 
-```{r}
+```{r echo=FALSE}
 median_ctr <- median(ctr_df$CTR)
 
 ctr_df %>% 
@@ -882,7 +885,7 @@ ctr_df %>%
   ggtitle("CTR Verteilung über die Cluster")
 ```
 Es sollen nur solche Cluster in die Benchmarkmodellierung einfließen, deren Cluster-Median mindestens die Hälfte des gesamten Medians beträgt. Folgende Cluster bleiben so übrig: 
-```{r}
+```{r echo=FALSE}
 #Cluster aussortieren, die deutlich vom CTR-Median entfernt liegen.
 clusters_perform <- ctr_df %>% 
   group_by(Cluster) %>% 
@@ -903,7 +906,7 @@ print(clusters_perform)
 ```
 
 Beschränkt man die Verteilung von Seitenaufrufen zu Klicks nun auf die verbliebenen Cluster, ergibt sich folgendes Bild:
-```{r}
+```{r echo=FALSE}
 ctr_df %>% 
   filter(Cluster %in% clusters_perform) %>% 
   ggplot(aes(x=Pageviews, y=Klicks, color=Cluster)) +
@@ -931,16 +934,16 @@ ctr_modelling_df %>%
 ```
 Beide Variablen nähern sich nun deutlich besser einer Normalverteilung an. Die abgeschnitten wirkende Verteilung der logViews resultiert aus der Vorbedingung, dass in der Modellierung nur Seiten-URLs mit mindestens 70 Aufrufen pro Woche betrachtet wurden.
 
-# 3.5.1 Regressionsmodellierung zur Vorhersage der Klicks in Abhängigkeit von Seitenaufrufen
+# 3.5.2 Regressionsmodellierung zur Vorhersage der Klicks in Abhängigkeit von Seitenaufrufen
 
-```{r}
+```{r echo=TRUE}
 #Temporäres Modell zur Ausreißererkennung in den Reisduen
 clicks_lm_1 <- lm(logKlicks ~ logViews, data = ctr_modelling_df)
 summary(clicks_lm_1)
 ```
 Das erste Modell trifft die Daten mit einem $R^2$ Wert von `r round(summary(clicks_lm_1)$r.squared,2)` noch nicht besonders gut. Eine Ausreißeranalyse auf den Residuen soll helfen, dass Modell weiter zu verbessern. Als Algortihmus wird ein Hampel-Test verwendet.
 
-```{r}
+```{r echo=TRUE}
 #Ausreißer markieren
 ctr_modelling_outliers <- hampel.proc(clicks_lm_1$residuals)
 
@@ -951,7 +954,7 @@ print(summary(clicks_lm_2))
 
 Das neue Modell nach Ausreißeranalyse trifft die Daten mit einem $R^2$ von `r round(summary(clicks_lm_2)$r.squared,2)` noch etwas besser. Die Analyse der Residuen soll zeigen, ob diese auch normalverteilt und das Modell damit akzeptabel ist:
 
-```{r}
+```{r echo=FALSE}
 plot(clicks_lm_2, which=1)
 ```
 Das Ergebnis: Das Modell trifft bei besonders kleinen prognostizierten Klicks die Daten noch nicht besonders gut. Dies dürfte darin begründet sein, dass mit der initialen Annahme von 70 Seitenaufrufen, eine Menge Zugriffe mit sehr wenig Traffic herausgefiltert wurde, aber gleichzeitig immer noch sehr viele Beobachtungen auftauchen, die wenig bis gar keine Klicks zeigen. 
@@ -959,7 +962,7 @@ Das Ergebnis: Das Modell trifft bei besonders kleinen prognostizierten Klicks di
 In den Performance-Cluster beträgt der Median-CTR, dass im Duchschnitt pro Seitenaufruf mindestens `r round(median_ctr_performance,2)` Klicks generiert werden sollten, bedeutet das für 70 Seitenaufufe pro Woche mindestens `r round(median_ctr_performance * 70,0)` Klicks absolut. Das Modellierungs-Datenset soll daher auch auf diese Anzahl von Minimum-Klicks beschränkt werden:
 
 
-```{r}
+```{r echo=TRUE}
 #Log-Transformation der Predictors zur besseren Modellierung:
 ctr_modelling_df <- 
   ctr_df %>% 
@@ -990,13 +993,13 @@ plot(clicks_lm_4, which=1)
 ```
 Das Modell ClicksLM_4 verbessert sich durch diesen zusätzlichen Constraint auf einen $R^2$ von `r round(summary(clicks_lm_4)$r.squared,2)` und weist gleichzeitig eine besser normalverteile Darstellung der Residuen auf. Der hohe Wert des Shapiro-Wilk-Test auf Normalverteilung der Residuen bestätigt diese Annahme:
 
-```{r}
+```{r echo=TRUE}
 shapiro.test(clicks_lm_4$residuals)
 ```
 
 Das Modell Clicks_LM_4 lässt sich nun dafür nutzen, um die Benchmark-Klicks im gesamten Datensatz, das heißt auch für alle Seitenaufrufe unter 70 zu verwenden. Des weiteren wird eine zusätzliche Spalte angefügt, die angibt ob der Benchmark jeweils erreichgt wurde oder nicht:
 
-```{r}
+```{r echo=FALSE}
 weekly_raw_tbl$Klicks_Benchmark <- round(expm1(predict(clicks_lm_4, weekly_raw_tbl %>% mutate(logViews = log1p(Pageviews)))),0)
 
 weekly_raw_tbl <- 
@@ -1010,113 +1013,110 @@ weekly_raw_tbl %>%
   head(10)
 ```
 
+Diese Benchmark-Erreichung lässt sich auf grafisch im Gesamtdatensatz visualisieren, wobei die Linie die Regressionsgerade (=CTR-Benchmark) ist und die Farbe die Erreichung des Benchmarks markiert:
 
-```{r}
+```{r echo=FALSE}
 weekly_raw_tbl %>%
-  filter(Pageviews >= 1) %>% 
-
   ggplot(aes(y=Klicks, x=Pageviews)) +
   geom_point(aes(color=Klicks_Benchmark_erreicht)) +
   geom_line(aes(x=Pageviews, y=Klicks_Benchmark), color="red")
-
-
 ```
 
 
-### Verteilung der RPC insgesamt
-Existiert bei den RPC überhaupt Varianz?
-Es scheint mindestens 3 Peaks zu geben: um 0.18, 0.27 und unter 0.05.
-Erkenntnis: Ja, es existiert Varianz. Die CTR streut sogar relativ stark um den Mittelwert XXX. Wobei Mittelwert hier offensichtlich kein besonders gutes Lagemaß ist.
-```{r}
-RPC_mean <- weekly_raw_tbl %>% select(RPC) %>% unlist %>% mean
+# 3.5.3 Analyse der RPC-Verteilung
+In der zweiten Konversionsebene soll die Kenngröße Umsatz in Bezug auf das Klickverhalten analysiert werden, um so nähere Erkenntise über die Benchmarkgröße RPC (Revenue-Per-Click) zu gewinnen. 
 
-weekly_raw_tbl %>%
+Da die Abfolge der Analyse im Wesentlichen identisch zur CTR-Betrachtung ist, werden die Auswertungen etwas kompakter zusammengefasst.
+
+Auch für die Kenngröße RPC ist es zunächst hilfreich, die Verteilung der Umsätze über den gesammten Datensatz zu betrachten. Die folgenden Abbildungen zeigen die Verteilung der Umsätze über die Einzelnen Seiten-URLs, sowie die Verteilung der Kennzahl RPC allgemein, im Zeitverlauf und über einzelne Seiten-URLs.
+
+
+```{r echo=FALSE}
+weekly_raw_tbl %>% 
+  ungroup %>% 
+  mutate(Tag=fct_reorder(Tag, Umsatz, .desc = T)) %>% 
+  ggplot(aes(x=Tag, y= Umsatz)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Verteilung von Umsätzen über Seiten-URLs")
+  
+```
+Auch hier lässt sich wieder erkennen, dass nur eine wenige Anzahl von Seiten-URLs die meisten Umsätze generiert.
+
+```{r echo=FALSE}
+weekly_raw_tbl %>% 
   select(RPC) %>%
   ggplot(aes(x=RPC)) +
-  geom_histogram(binwidth = 0.5) + 
-  geom_vline(aes(xintercept=RPC_mean)) +
-  coord_cartesian(xlim = c(0,10))
+  geom_histogram(binwidth = 1)
+
+weekly_clicks_min <- round(median_ctr_performance * 70,0)
+```
+Entsprehendes schlägt sich auch in der Betrachtung der Verteilung der RPC im gesamten Datenset nieder. Auch hier soll wieder ein Mindestwert definiert werden, in diesem Fall analog zur vorherigen Betrachtung die Baseline von `r weekly_clicks_min` Klicks pro Woche.
+
+```{r echo=FALSE}
+RPC_mean <- weekly_raw_tbl %>% filter(Klicks >weekly_clicks_min) %>% select(RPC) %>% unlist %>% mean
+
+weekly_raw_tbl %>%
+  filter(Klicks >= weekly_clicks_min) %>% 
+  select(RPC) %>%
+  ggplot(aes(x=RPC)) +
+  geom_histogram(binwidth = 1) + 
+  geom_vline(aes(xintercept=RPC_mean))
 ```
 
-Schwankt der RPC in Abhängigkeit von der Zeit?
-Ergebnis: Schwer zusagen auf Grundlage der vielen Ausreißer nach oben.
-```{r}
+Im Folgenden wird die Schwankung der Kenngröße RPC in Abhängigkeit von Zeit und Seiten-URL untersucht:
+```{r echo=FALSE}
 weekly_raw_tbl %>%
+  filter(Klicks >= weekly_clicks_min) %>% 
   select(RPC, CW) %>%
   ggplot(aes(y=RPC, x=CW)) +
   geom_boxplot() +
-  coord_cartesian(ylim = c(0,20)) +
+  geom_hline(yintercept = RPC_mean) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  geom_hline(yintercept = RPC_mean)
+  ggtitle("RPC im Wochenverlauf")
 ```
-
-Vermutung: RPC variiert je nach Seiten-URL, also manche Seiten performen gut, andere weniger.
-Erkenntnis: Stimmt, der RPC schwankt stark nach Seiten-URL. Die Sortierung der X-Achse hier erfolgt anhand der absteigenden Klicks gesamt dieser Seiten-URL. Eine der Top-URLs hat katastrophale CTR-Werte
-```{r}
+```{r echo=FALSE}
 tag_id_order <- weekly_raw_tbl %>%
-  select(Tag, Klicks) %>% 
+  filter(Klicks >= weekly_clicks_min) %>%
+  select(Tag, Klicks, CW) %>% 
   group_by(Tag) %>% 
-  summarize(Klicks = sum(Klicks)) %>%
-  arrange(desc(Klicks)) %>% 
+  summarize(Klicks = sum(Klicks),
+            AnzahlWochen = length(unique(CW))) %>%
+  mutate(KlicksPerWeek = Klicks / AnzahlWochen) %>% 
+  arrange(desc(KlicksPerWeek)) %>% 
   select(Tag) %>% 
   unlist
 
 weekly_raw_tbl %>%
+  filter(Klicks >= weekly_clicks_min) %>% 
   select(RPC, Tag) %>%
   mutate(Tag = fct_relevel(Tag, tag_id_order)) %>% 
   ggplot(aes(y=RPC, x=Tag)) +
   geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  coord_cartesian(ylim = c(0,10))
+  geom_hline(yintercept = RPC_mean) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
+Ähnlich wie bereits bei der CTR-Analyse wird deutlich, dass die Verteilung der Umsätze stärker über die einzelnen Seiten-URLs schwankt als über die Zeit, was bedeutet, dass die Seiten-URL ein größerer Einflussfaktor auf die Performance des RPC-Benchmarks zu sein scheint. Gleichzeitig gibt es auch mehr Ausreißer, sowohl über Seiten-URLs als auch über die Zeitdimension verteilt.
 
-Wie verhält sich die RPC im Vergleich zu den Klicks?
-Zur Verdeutlichung schauen wir uns den direkten Zusammenhang zwischen Umsatz und Klicks an. Sollte die RPC konstant sein, müssten sich die Punkte durch eine Regressionsgerade einfach verbinden lassen.
-
-```{r}
+```{r echo=FALSE}
 weekly_raw_tbl %>%
+  filter(Klicks >= weekly_clicks_min) %>% 
   select(Umsatz, Klicks) %>%
   ggplot(aes(y=Umsatz, x=Klicks)) +
-  geom_point()
-```
-Erkenntnis: Linearer Zusammenhang existiert.
-
-Die Modellierung des CTR-Benchmarks sollte mindestens in Abhängigkeit der Pageviews durchgeführt werden.
-
-Modellierungsversuch der o.g. Verteilung:
-
-```{r}
-revenues_lm <- lm(Umsatz ~ Klicks, data = weekly_raw_tbl)
-predicted_revenues <- data.frame(Umsatz_Prediction = predict(revenues_lm, weekly_raw_tbl), Klicks=weekly_raw_tbl$Klicks)
-
-weekly_raw_tbl %>%
-  filter(Klicks >= 1) %>% 
-  select(Klicks, Umsatz) %>%
-  ggplot(aes(y=Umsatz, x=Klicks)) +
   geom_point() +
-  geom_line(data=predicted_revenues, aes(x=Klicks, y=Umsatz_Prediction), color="blue")
-
+  ggtitle("Verhältnis von Klicks zu Umsätzen, absolut")
 ```
+Die Erkenntnis: Aufgrund der vielen Ausreißer, ist der lineare Zusammenhang hier nicht so offensichtlich wie bei der Analyse der Seitenaufrufe und Klicks. Zur Ableitung der Benchmarks ist also die entsprechende Bereinigung der Daten entscheidend. Auch hier sollen zunächst mithilfe einer Clusteranalyse gut performende und schlecht performende Punkte getrennt werden.
 
-Qualität des Baseline-Modells:
-Schwache Resultate. Vor allem: Verlertzung der Annahme der Normalverteilung.
-```{r}
-summary(revenues_lm) #r2 0.7116
-plot(revenues_lm, which=1)
-
-```
-
-Cluster-Analyse: Auflösung Eliminiernug bestimmter Punkte zur besseren Modellierung
-
-```{r}
+An dieser Stelle wird ein hierarchischer Clusteralgorithmus verwendet, um die Strukturen innerhalb der Daten besser erkenntlich zu machen.
+```{r echo=TRUE}
 rpc_hclust <- weekly_raw_tbl %>% 
+  filter(Klicks >= weekly_clicks_min) %>% 
   select(Tag, RPC, Klicks, Umsatz, CW) %>% 
   mutate(RPC = scale(RPC, center = TRUE, scale = TRUE) ) %>% 
   select(-Klicks, -Umsatz) %>% 
   spread(Tag, RPC) %>% 
   select(-CW)
-
-min(rpc_hclust, na.rm = T)
 
 #Replace missing with minimal value
 rpc_hclust <- 
@@ -1127,7 +1127,7 @@ rpc_hclust <-
 rpc_hclust <- hclust(dist(rpc_hclust, method = "euclidean"), method="ward.D")
 plot(rpc_hclust)
 
-rpc_hclust_assignment <- cutree(rpc_hclust, h=20) %>% 
+rpc_hclust_assignment <- cutree(rpc_hclust, h=12) %>% 
   as.list() %>% 
   as_tibble() %>% 
   t()
@@ -1135,7 +1135,9 @@ rpc_hclust_assignment <- cutree(rpc_hclust, h=20) %>%
 rpc_hclust_assignment = data.frame("Tag" = rownames(rpc_hclust_assignment),
                                    "Cluster" = rpc_hclust_assignment[,1])
 
-rpc_df <- weekly_raw_tbl %>% 
+rpc_df <- weekly_raw_tbl %>%
+  select(Tag, CW, Umsatz, Klicks, RPC) %>% 
+  filter(Klicks >= weekly_clicks_min) %>% 
   left_join(rpc_hclust_assignment, by="Tag") %>% 
   mutate(Cluster = as.factor(Cluster)) 
 
@@ -1144,7 +1146,7 @@ rpc_df <- weekly_raw_tbl %>%
   ggplot(aes(Klicks, Umsatz)) + 
   geom_point() + 
   scale_y_continuous(labels = comma) +
-  ggtitle("R2: Umsatz gegen Clicks mit Cluster") +
+  ggtitle("R2: Umsatz gegen Clicks, je Cluster") +
   ylab("Umsatz") +
   xlab("Klicks") +
   facet_wrap(~Cluster, ncol=3, scales = "free")
@@ -1153,196 +1155,165 @@ rpc_df %>%
   ggplot(aes(x=Klicks, y=Umsatz, color=Cluster)) +
   geom_point()
 ```
+Nun werden die RPC-Mediane der einzelnen Cluster analysiert und High-Performer markiert:
 
-RPC-Analyse der Cluster
-```{r}
+```{r echo=FALSE}
 median_rpc <- median(rpc_df$RPC)
 
 rpc_df %>% 
   ggplot(aes(x=Cluster, y=RPC)) +
   geom_boxplot() +
-  coord_cartesian(ylim = c(0,20)) +
-  geom_hline(yintercept = median_rpc)
+  geom_hline(yintercept = median_rpc) +
+  ggtitle("RPC Verteilung über die Cluster")
+```
+Nach Einschränkung auf die High Performance Cluster, die hier durch einen Median von mindesten 70% des Gesamt-Medians definiert werden, ergibt sich folgendes Bild:
 
-#Cluster mit hohen RPC auswählen.
-clusters_perform <- rpc_df %>% 
+```{r echo=FALSE}
+#Cluster aussortieren, die deutlich vom CTR-Median entfernt liegen.
+clusters_perform_rpc <- rpc_df %>% 
   group_by(Cluster) %>% 
   summarise(RPC = median(RPC)) %>% 
-  filter(RPC >= median_rpc) %>% 
+  filter(RPC > median_rpc*0.7) %>% 
   select(Cluster) %>% 
   unlist
 
+#Performance-Median berechnen, der später noch benötigt wird.
+median_rpc_performance <-
+  rpc_df %>% 
+  filter(Cluster %in% clusters_perform_rpc) %>% 
+  select(RPC) %>% 
+  summarise(median(RPC)) %>% 
+  unlist
+
+print(clusters_perform_rpc)
 ```
 
-```{r}
-#Performance Datensatz: Nur Cluster mit hohen RPC und Datenpunkte mit mehr als 0 Umsatz
-rpc_perform_df <- rpc_df %>% 
-  filter(Cluster %in% clusters_perform) %>% 
-  filter(Klicks > 0 & Umsatz > 0)
-
-rpc_perform_df %>% 
+```{r echo=FALSE}
+rpc_df %>% 
+  filter(Cluster %in% clusters_perform_rpc) %>% 
   ggplot(aes(x=Klicks, y=Umsatz, color=Cluster)) +
-  geom_point()
+  geom_point() +
+  ggtitle("Verhältnis von Klicks zu Umsatz, absolut, nach Bereinigung")
 ```
 
-Modellierung: Regression nach Clustering
-Zuerst: Normalverteilung erreichen
-```{r}
+# 3.5.4 Regressionsmodellierung zur Vorhersage der Klicks in Abhängigkeit von Seitenaufrufen
+
+Der Aufbau des entsprechenden Regressionsmodells erfolgt analog zur CTR-Analyse mit folgendem Skript:
+
+```{r echo=TRUE}
 #Log-Transformation der Predictors zur besseren Modellierung:
-rpc_perform_df <- rpc_perform_df %>%
+rpc_modelling_df <- 
+  rpc_df %>% 
+  filter(Cluster %in% clusters_perform_rpc & Klicks >= round(median_rpc_performance * weekly_clicks_min,1) ) %>% 
   mutate(logKlicks = log1p(Klicks),
          logUmsatz = log1p(Umsatz))
 
-hist(rpc_perform_df$logKlicks)
-hist(rpc_perform_df$logUmsatz)
+p <- rpc_modelling_df %>% 
+  select(logKlicks, logUmsatz) %>% 
+  gather("Variable", "Log") %>% 
+  ggplot(aes(x=Log)) +
+  geom_histogram(binwidth = .7) +
+  facet_grid(.~Variable)
 
-rpc_perform_df %>% 
-  ggplot(aes(y=logKlicks, x=logUmsatz)) +
-  geom_point()
+print(p)
 
+#Temporäres Modell zur Ausreißererkennung in den Residuen
+revenue_lm_1 <- lm(logUmsatz ~ logKlicks, data = rpc_modelling_df)
 
-```
-
-Neue Regressionsmodellierung
-```{r}
-#Temporäres Modell zur Ausreißererkennung in den Reisduen
-rev_lm_1 <- lm(logUmsatz ~ logKlicks, data = rpc_perform_df)
 #Ausreißer markieren
-rev_perform_outliers <- hampel.proc(rev_lm_1$residuals)
+rpc_modelling_outliers <- hampel.proc(revenue_lm_1$residuals)
 
 #Neues Modell ohne Ausreißer
-rev_lm_2 <- lm(logUmsatz ~ logKlicks, data=rpc_perform_df[-rev_perform_outliers,])
-print(summary(rev_lm_2)) #.75 r-squared
-plot(rev_lm_2, which=1:4)
-print(shapiro.test(rev_lm_2$residuals)) #.99
+revenue_lm_2 <- lm(logUmsatz ~ logKlicks, data=rpc_modelling_df[-rpc_modelling_outliers,])
 
-#Normalverteilung der Residuen
-rev_lm_2$residuals %>% 
-  as_tibble() %>% 
-  rename(Residuals = value) %>% 
-  ggplot(aes(x=Residuals)) +
-  geom_histogram(binwidth = .5) +
-  theme_minimal() +
-  ggtitle("Residuals of Model Clicks_LM_2")
+print(summary(revenue_lm_2))
 
+plot(revenue_lm_2, which=1)
+```
+Das Modell Revenue_LM_2 erreicht einen $R^2$ von `r round(summary(revenue_lm_2)$r.squared,2)` und weist gleichzeitig eine akzeptable Residuenverteilung auf. Der Shapiro-Wilk-Test auf Normalverteilung unterstreicht die Normalverteilungsannahme ebenfalls:
+
+```{r echo=TRUE}
+shapiro.test(revenue_lm_2$residuals)
 ```
 
-ausgewähltes Modell:
+Das Modell Revenue_LM_2 wird nun dafür genutzt, um die Benchmark-Umsätze im gesamten Datensatz zu berechnen:
 
-```{r}
-rev_lm_2
-```
-
-Benchmarking: Berechne Benchmarks und füge diese an Gesamtdatensatz an
-```{r}
-weekly_raw_tbl$Umsatz_Benchmark <- round(expm1(predict(rev_lm_2, weekly_raw_tbl %>% mutate(logKlicks = log1p(Klicks)))),0)
+```{r echo=FALSE}
+weekly_raw_tbl$Umsatz_Benchmark <- round(expm1(predict(revenue_lm_2, weekly_raw_tbl %>% mutate(logKlicks = log1p(Klicks)))),0)
 
 weekly_raw_tbl <- 
   weekly_raw_tbl %>% 
   mutate(Umsatz_Benchmark_erreicht = ifelse(Umsatz >= Umsatz_Benchmark, TRUE, FALSE))
 
+weekly_raw_tbl %>% 
+  select(Tag, CW, Umsatz, Umsatz_Benchmark, Umsatz_Benchmark_erreicht) %>% 
+  filter(CW == "2017-51") %>% 
+  arrange(desc(Umsatz_Benchmark)) %>%
+  head(10)
+```
 
+Diese Benchmark-Erreichung wird wie folgt grafisch visualisiert:
+
+```{r echo=FALSE}
 weekly_raw_tbl %>%
   ggplot(aes(y=Umsatz, x=Klicks)) +
   geom_point(aes(color=Umsatz_Benchmark_erreicht)) +
   geom_line(aes(x=Klicks, y=Umsatz_Benchmark), color="red")
-
-
-```
-
-## Scoring Model
-Predict Clicks based on regression model & calculate Benchmark cTRs for each data point
-
-```{r}
-#See the new variance of CTR and RPC Benchmarks. Far more accurate than "just" mean value
-weekly_raw_tbl <-
-  weekly_raw_tbl %>% 
-  mutate(Benchmark_CTR = Klicks_Benchmark / Pageviews,
-         Benchmark_RPC = Umsatz_Benchmark / Klicks)
-
-weekly_raw_tbl %>% 
-  select(Benchmark_CTR) %>% 
-  filter(Benchmark_CTR > 0) %>% 
-  summary()
-
-weekly_raw_tbl %>% 
-  select(Benchmark_RPC) %>% 
-  filter(Benchmark_RPC < Inf) %>% 
-  summary()
-
 ```
 
 
-```{r}
+# 3.6 Deployment: Aufbau des Scoring-Widgets
+Mit den nun neu gewonnen Informationenn über Definition und Erreichung eines Benchmarks für einen bestimmten Datenpunkt in einer Kalenderwoche lassen sich als Seitenbetreiber gewinnbringende Erkenntnisse ableiten.
+
+Noch einmal zum Hintergrund: Als Seitenbetreiber mit Affiliate-Ansatz stehen im Prinzip vier grobe Strategien zur Verfügung, um die Umsätze einer Seite zu erhöhen:
+
+- 1. Mehr Traffic auf die Seite bringen, bspw. durch Werbemaßnahmen und so die Anzahl der Seitenaufrufe steigern 
+- 2. Die CTR erhöhen, indem beispielsweise mehr Affiliate-Links auf einer Seiten-URL platziert werden oder die Platzierung prominenter erfolgt
+- 3. Die RPC erhöhen, indem die verlinkten Produkte besser den Kundeninteressen angepasst werden.
+
+Die Informationen zur Benchmarkerreichung teilen einem Seitenbetreiber mit, welche Strategie er auf welcher Seiten-URL anwenden muss.
+
+Der Scoring-Datensatz sieht so aus, dass über alle Seiten-URL der Mittelwert der Benchmarkerreichung gebildet wird. Dieser Mittelwert wird damit zum Benchmark-Score. Hat eine Seiten-URL immer den Benchmark erreicht oder geschlagen, beträgt der Score 100%, wurde der Benchmark nie erreicht beträgt die Quote 0%.
+
+Die folgende Tabelle zeigt die Seiten-URLs mit den jeweils höchsten Scores für die RPC-Benchmarkerreichung:
+
+```{r echo=FALSE}
 scores_df <- weekly_raw_tbl %>%
   filter(Pageviews > 0) %>% #Scoring nur bei Seiten mit Seitenaufrufen durchführen
   group_by(Tag) %>% 
   summarize(Score_CTR = mean(Klicks_Benchmark_erreicht),
             Score_RPC = mean(Umsatz_Benchmark_erreicht),
-            Pageviews = sum(Pageviews)) %>% 
-  mutate(Handlungsfeld = ifelse(Score_CTR > 0.5 & Score_RPC <=0.5,"B",
-                                ifelse(Score_CTR > 0.5 & Score_RPC > 0.5,"C",
-                                       ifelse(Score_CTR <= 0.5 & Score_RPC > 0.5,"D",
-                                              "A")
-                                       )
-                                )
-         )
-
-
-write_rds(scores_df, "data/scores_df.rds")
-
-
-```
-
-Plotte Seiten-URLs mit hoher und niedriger CTR Performance
-```{r}
-ctr_underperform_urls <- scores_df %>% 
-  arrange(Score_CTR) %>% 
-  head(5) %>% 
-  select(Tag) %>% 
-  unlist
-
-ctr_overperform_urls <- scores_df %>% 
-  arrange(Score_CTR) %>% 
-  tail(5) %>% 
-  select(Tag) %>% 
-  unlist
-
-rpc_underperform_urls <- scores_df %>% 
-  arrange(Score_RPC) %>% 
-  head(5) %>% 
-  select(Tag) %>% 
-  unlist
-
-rpc_overperform_urls <- scores_df %>% 
-  arrange(Score_RPC) %>% 
-  tail(5) %>% 
-  select(Tag) %>% 
-  unlist
-
-weekly_raw_tbl %>%
-  select(Tag, Pageviews, Klicks) %>%
-  filter(Tag %in% ctr_underperform_urls) %>% 
-  ggplot(aes(y=Klicks, x=Pageviews, color=Tag)) +
-  geom_point() +
-  ggtitle("Tags mit schlechter CTR Performance")
-
-weekly_raw_tbl %>%
-  select(Tag, Umsatz, Klicks) %>%
-  filter(Tag %in% rpc_underperform_urls) %>% 
-  ggplot(aes(y=Umsatz, x=Klicks, color=Tag)) +
-  geom_point() +
-  ggtitle("Tags mit schlechter RPC Performance")
-
-```
-
-Scoring Widget
-```{r}
-#Include as separate file
+            Pageviews_Gesamt = sum(Pageviews))
 
 scores_df %>% 
-  ggplot(aes(x=Score_CTR, y=Score_RPC, color=Handlungsfeld, size=Pageviews)) +
-  geom_point() +
+  arrange(desc(Score_RPC)) %>%
+  head(10)
+
+scores_df %>% 
+  arrange(Score_RPC) %>%
+  head(10)
+
+```
+
+Wie eingangs erwähnt lassen sich diese Berechnungen nutzen, um daraus strategische Handlungsempfehlungen abzuleiten. Diese entstehen, indem bestimmte Score-Erreichungen bestimmten Handlungsfeldern zugewiesen werden:
+```{r echo=TRUE}
+scores_df <-scores_df %>% 
+  mutate(Handlungsfeld = case_when(
+    Score_CTR > 0.5 & Score_RPC <=0.5 ~ "B",
+    Score_CTR > 0.5 & Score_RPC > 0.5 ~ "C",
+    Score_CTR <= 0.5 & Score_RPC > 0.5 ~ "D",
+    TRUE ~ "A") # Geringer CTR Score und geringer RPC Score
+    )
+```
+
+Zur besseren Veranschaulichung lassen sich diese Scores in einer Handlungsfeldmatrix darstellen:
+
+Scoring Widget
+```{r echo=TRUE}
+scores_df %>% 
+  ggplot(aes(x=Score_CTR, y=Score_RPC, color=Handlungsfeld, size=Pageviews_Gesamt)) +
+  geom_point(alpha = .7) +
+  scale_size_continuous(range = c(1,10)) +
   ggtitle("CTR-RPC-Scoring Widget") +
   xlab("CTR Score") +
   ylab("RPC Score") +
@@ -1350,3 +1321,75 @@ scores_df %>%
   geom_vline(xintercept = .5, color="grey")
 ```
 
+Die einzelnen Handlungsfelder lassen sich nun wie folgt übersetzen:
+
+Handlungsfeld A (roter Bereich) beschreibt Seiten-URLs, die sowohl hinsichtlich der Klickraten als auch hinsichtlich der vermittelten Umsätze eine eher schwache Performance zeigen. Hier sollte ergründet werden, ob diese schwache Performance strukturell bedingt ist (bspw. durch die Verlinkung der falschen Produkte oder eine schlechte Platzierung von Werbelinks) oder ob dies eher auf mangelnde Datenqualität (z.B. begründet durch zu wenig Seitenaufrufe) zurückzuführen ist. Des Weiteren sollte analysiert werden, ob in diesem Feld Seiten-URLs mit hohem Besuchervolumen anzutreffen sind. Falls „ja“, sollten hier schnellstmöglich geeignete Maßnahmen eingeleitet werden, um zuallererst eine Verbesserung der Klickrate und in einem zweiten Schritt die Beobachtung der resultierenden Umsatzkennzahlen zu adressieren. 
+
+Handlungsfeld B beschreibt ein strategisch besonders umsatzrelevantes Handlungsfeld. Hier werden Seiten-URLs gruppiert, die bezüglich der individuellen Klickrate bereits eine relativ gute Performance aufweisen. Allerdings bietet die Konversion auf zweiter Ebene noch erhebliches Verbesserungspotenzial in Form von vermittelten Umsätzen. Es bietet sich hier an, mit der Verlinkung von ggf. unterschiedlichen Produkten zu experimentieren und beispielsweise im Rahmen weiterer Tests (z.B. A/B-Tests) zu untersuchen, ob sich die vermittelten Umsätze pro Klick durch die Verlinkung unterschiedlicher Produkte verbessern lässt.
+
+In Handlungsfeld C (türkis markierter Bereich) wurden Seiten-URLs gruppiert, die bereits überdurchschnittliche Performance hinsichtlich der Klickraten (CTR) und Klickpreise (RPC) aufweisen. Seiten-URLs in diesem Feld sollten unbedingt prioritär im Fokus bleiben und es sollten außerdem Anstrengungen unternommen werden, die absoluten Seitenaufrufe für diese Seiten-URLs zu erhöhen, bspw. durch geeignete Maßnahmen absichern.
+
+Datenpunkte in Handlungsfeld D (lilafarbener Bereich) stellen Seiten-URLs dar, deren Performance hinsichtlich der zweiten Konversionsebene überdurchschnittliche Werte annimmt, deren Klickraten jedoch extrem niedrig sind. Der Fokus dieser Seiten sollte darauf liegen, zunächst die Klickraten zu erhöhen, beispielsweise durch die wirksamere oder häufigere Platzierung von Werbelinks bzw. Werbemitteln auf den einzelnen Seiten. Des Weiteren sollte beobachtet werden, wie sich die RPCs bei zunehmenden Klicks verhalten und in welches Handlungsfeld sich die URLs dadurch ggf. entwickeln.
+
+Ferner lässt sich durch die Benchmarkmodellierung auch ein Umsatzpotenzial errechnen unter der Annahme, dass der Benchmark für CTR und RPC immer mindestens erreicht wäre. Diese Information zur Umsatzprognose kann als weiterer Kontext im Diagramm dargestellt werden.
+
+Im konkreten Fallbeispiel wurde diese Visualisierung als interaktives HTML-Widget bereit, welches neben der jeweiligen Seiten-URL auch das dazu gehörige Umsatzpotenzial anzeigt, sobald mit der Maus über den jeweiligen Punkt gefahren wird.
+
+```{r echo=FALSE}
+# Rechne Umsatzpotenziale aus und füge diese an das Scoring-Datenset an
+
+revenue_potential_tbl <-
+  weekly_raw_tbl %>% 
+  select(Tag, Klicks, Klicks_Benchmark, Umsatz_Benchmark, Umsatz) %>%
+  mutate(Klickpotenzial = ifelse(Klicks < Klicks_Benchmark, Klicks_Benchmark, 0)) # Annahme,Klickbenchmark wird immer erreicht 
+
+# Berechne neue Umsatzbenchmarks auf Basis des Klickpotenzials
+revenue_potential_tbl$Umsatz_Klickpotenzial <- round(expm1(predict(revenue_lm_2, revenue_potential_tbl %>% mutate(logKlicks = log1p(Klickpotenzial)))),0)
+
+revenue_potential_tbl <- 
+  revenue_potential_tbl %>%
+  mutate(Umsatzhochrechnung = ifelse(Umsatz_Klickpotenzial == 0, Umsatz_Benchmark, Umsatz_Klickpotenzial)) %>%  #Wenn kein Klickpotenzial da ist, nimm den Umsatz_Benchmark
+  mutate(Umsatzpotenzial = Umsatzhochrechnung - Umsatz,
+         Umsatzpotenzial = ifelse(Umsatzpotenzial > 0, Umsatzpotenzial, 0 )) %>% 
+  group_by(Tag) %>% 
+  summarise(Umsatzpotenzial = sum(Umsatzpotenzial)) %>% 
+  mutate(UmsatzpotenzialLabel = paste(round(Umsatzpotenzial/1000,1), "TEUR"))
+
+scores_df <- scores_df %>% 
+  left_join(revenue_potential_tbl)
+
+# Schreibe externe Datei für Widget
+write_rds(scores_df, "data/scores_df.rds")
+
+```
+
+
+# 4. Zusammenfassung der Ergebnisse
+
+In der vorliegenden Arbeit wurden statistische Methoden der explorativen Datenanalyse auf ein konkretes Fallbeispiel angewendet, um daraus Empfehlungen abzuleiten, wie der im Beispielfall generierte Umsatz gesteigert werden kann.
+
+Die Analysen haben gezeigt, dass bereits mit einfachen Analysemethoden und leicht interpretierbaren Modellen wesentliche Optimierungspotenziale hinsichtlich der Umsatzsteigerung identifiziert werden konnten.  
+
+Im Fokus der Untersuchungen stand dabei die strategische Entscheidungsebene, die maßgeblich durch menschliches Mitwirken geprägt wird. Der Kern der Handlungsempfehlung zielte somit insbesondere auf Entscheidungen ab, die in strategische Bereiche wie der Geschäftsfeldentwicklung oder das interne Benchmarking fallen.
+
+Mithilfe unterschiedlicher Visualisierungen konnten sowohl die Kernprobleme des Fallbeispiels (ungleichmäßige Verteilung des Umsatzes über Zeit und Webseiten) aber auch die wesentlichen Potenziale (strategische Handlungsfelder) instruktiv dargestellt werden. Des Weiteren konnten durch die Nutzung einfacher Clusterverfahren natürliche Strukturen innerhalb der Daten, bezogen auf die Klick- und Umsatzleistung, aufgedeckt werden, welche maßgeblich zur Ableitung zielführender Strategien beigetragen haben. Zudem unterstützte die Clusteranalyse dabei, lineare Wirkungszusammenhänge zwischen den Variablen Seitenaufrufe und Klicks sowie Klicks und Umsätze präziser darzustellen: So wurden einfache Regressionsmodelle auf Basis einzelner Cluster entwickelt, um die wesentlichen Wirkungszusammenhänge zwischen den Variablen Seitenaufrufen und Klicks bzw. Klicks und Umsätze über alle Seiten-URLs hinweg besser modellieren zu können. Gleichzeitig wurde bei der Modellierung darauf geachtet, dass die jeweiligen CTR bzw. RPC-Mediane in den zu modellierenden Clustern höher waren, als in den nicht modellierten Clustern.
+
+Dies hatte zur Folge, dass die Regressions-Prognosen gleichzeitig als Ziel-Werte für alle (d.h. auch die nicht modellierten Cluster) übernommen werden konnten. So ließen sich individuelle Scorings in Bezug auf die Erreichung oder Nicht-Erreichung des Zielwertes auf Basis jedes einzelnen Datenpunktes berechnen. Im Gegensatz zu CTR- und RPC-Analysen, die beispielsweise nur auf der Betrachtung von Durchschnittswerten einzelner Werbemittel oder Seiten-URLs basieren, liefern diese Ergebnisse deutlich genauere Benchmarks.
+
+Die Validierung der Regressionsmodelle wurde mit Hilfe von Standardverfahren wie zum Beispiel der Residuenanalyse durchgeführt.
+
+Auf Basis der jeweils pro Seiten-URL erreichten CTR- und RPC-Scorings konnten insgesamt vier strategische Handlungsfelder identifiziert werden, die jeweils unterschiedliche Maßnahmen für die ihnen zugeordneten Seiten-URLs implizieren.
+
+Als Nebeneffekt haben die Untersuchungen außerdem gezeigt, dass die meisten Umsätze jeweils zu Wochenbeginn und Wochenende generiert werden. Um Umsatzausfälle zu reduzieren, sollten Wartungsarbeiten daher tendenziell eher in der Wochenmitte als am Ende einer Woche stattfinden.
+
+Auf einer übergeordneten Ebene hat das Fallbeispiel indirekt demonstriert, dass im Bereich des Online-Marketings selbst kleinste Projekte bereits relativ viel Datenaufkommen und -komplexität verursachen. Doch benötigt man immer direkt Machine-Learning-Methoden um aus diesen Daten belastbare Erkenntnisse für die Zukunft zu gewinnen? Die Antwort ist ganz klar: Nein.
+
+Denn selbst einfachste Basis-Werkzeuge der explorativen Datenanalyse bieten immer noch ein hoch wirksames Rüstzeug: Clusteranalysen und Regressionsmodelle unterstützen dabei, die groben Strukturen und Zusammenhänge innerhalb der Daten besser zu verstehen und einzuordnen. Einfache Visualisierungen wie Histogramme oder Boxplots geben nach wie vor eine gute, erste Orientierung über die Verteilung von Daten, unabhängig von deren Umfang. Diese Werkzeuge sollten intensiv genutzt werden, auch – und insbesondere – in besonders datenintensiven und vermeintlich hoffnungslos komplexen Datenströmen, wie jene aus der Welt der Internetökonomie.
+
+# 5. Kritische Würdigung
+
+Aus dem vorliegenden Beobachtungszeitraum von zwölf Monaten lassen sich keine fundierten Aussagen zu Trends und saisonalen Effekten in Bezug auf die Seitenaufrufe und damit auch in Bezug auf Klicks und Umsätze treffen. Da die Vermutung naheliegt, dass saisonale Effekte einmal jährlich auftreten, insbesondere geprägt durch das Weihnachtsgeschäft, sollten idealerweise mindestens zwei weitere Vergleichszeiträume vorliegen, um diese Hypothese zu testen. Die Aussagen zu den Seitenaufrufen können nur dann exakt formuliert werden, wenn weitere Zeitreihen vorliegen. 
+
+Des Weiteren sollten die Betrachtungsebene idealerweise nicht nur auf Kalenderwochen- sondern auf mindestens Tagesebene erfolgen, um die Genauigkeit der Modelle weiter zu verbessern und ggf. weitere Einflussgrößen in die Modelle hinzuzunehmen (bspw. Wochentage). Da die Datensets für Umsätze und Seitenaufrufe bereits täglich vorliegen, müssten hier nur noch tagesaktuelle Werte für Klicks generiert werden, um diesen Schritt zu gehen.
+
+Die im Rahmen dieser Arbeit durchgeführten Modellierungen, dazu zählen insbesondere die Clusteranalysen sowie die Regressionen, wurden vor dem Hintergrund einer explorativen Datenanalyse durchgeführt. Dies bedeutet, dass die Feinjustierung dieser Modelle noch zu leisten ist. Im Beispiel der Regressionsanalysen wurden die allgemeinen Anwendungsvoraussetzungen, darunter insbesondere die Annahme der Linearität, untersucht und anschließend Regressionskoeffizienten zur Modellierung vorgeschlagen. Hier sollte auch noch die Robustheit des Modells mittels Übertragung auf neue Test-Daten überprüft werden, um beispielsweise eine Überanpassung des Models auszuschließen. Im Falle der Clusteranalyse sollten die Gruppenunterschiede weiterführend mithilfe von Teststatistiken validiert werden. Insgesamt sind die Empfehlungen der explorativen Cluster- und Regressionsanalyse als Ausgangspunkt für weitere Detailanalysen zu verstehen und nicht als finales, implementierbares Endprodukt. Die Modelle müssten auf neuen Daten regelmäßig neu validiert werden, um zu sehen, ob die Anwendbarkeit nach wie vor gegeben ist.
