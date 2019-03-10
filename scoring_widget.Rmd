@@ -9,9 +9,10 @@ library(tidyverse)
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-read_rds("data/scores_df.rds") %>% 
+read_rds("data/scores_df.rds") %>%
+  mutate(TextLabel= paste(Tag, "\nUmsatzpotenzial:", Umsatzpotenzial)) %>% 
   figure(width=750, title="CTR-RPC-Scoring Widget", ylab="RPC Score", xlab = "CTR Score") %>% 
-  ly_points(Score_CTR, Score_RPC, color = Handlungsfeld, hover=Tag, size=(sqrt(Pageviews/20)))
+  ly_points(Score_CTR, Score_RPC, color = Handlungsfeld, hover=TextLabel, size=(sqrt(Pageviews_Gesamt/20)))
 ```
 Each color represents one field of action:
 Green (3) = Underperformer, improve both CTR and RPC Blue (1) = Increase CTR by improving link placements
