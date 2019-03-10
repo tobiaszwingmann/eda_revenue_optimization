@@ -2,7 +2,9 @@
 title: "Anwendung explorativer Datenanalyse zur Identifikation von Optimierungspotenzialen hinsichtlich des Umsatzes am Beispiel eines On-line-Publishers mit Affiliate-Ansatz"
 author: "Tobias Zwingmann"
 date: "9 1 2019"
-output: pdf_document
+output: 
+  pdf_document: 
+    latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE}
@@ -627,7 +629,7 @@ Hier sollte das finale Datenset beschrieben werden, dass nach Integration der Qu
 
 #3.4 Explorative Datenanalyse
 
-Um zunächst ein allgemeines Verständnis über die Beschaffenheit und Verteilung der Daten zu bekommen, soll die allgemeine Struktur- und Häufigkeitsverteilung der Merkmale Seitenaufrufe, Klicks und Umsätze untersucht werden, ohne konkreten Bezug zu weiteren Kennzahlen. Die Untersuchungen dienen dazu, Besonderheiten in der Datenverteilung zu identifizieren und diese vor weiteren Analysen ggf. zu bearbeiten. 
+Um ein allgemeines Verständnis für die Beschaffenheit und Verteilung der Daten zu bekommen, soll die allgemeine Struktur- und Häufigkeitsverteilung der Merkmale Seitenaufrufe, Klicks und Umsätze untersucht werden. Die Untersuchungen dienen dazu, Besonderheiten in der Datenverteilung zu identifizieren und diese vor weiteren Analysen ggf. zu bearbeiten. 
 
 Zunächst wird die Verteilung der kumulierten wöchentlichen Seitenaufrufe ($V$), Klicks ($C$) und Umsätze ($R$) grafisch untersucht:
 
@@ -717,9 +719,9 @@ weekly_raw_tbl %>%
         legend.position = "bottom") +
   expand_limits(y=0)
 ```
-Aus dieser Betrachtung ergeben sich zwei zentrale Erkenntnisse: Einerseits korrelieren alle drei Werte miteinander, Seitenaufrufe und Klicks sehr stark und der Verlauf der Umsätze deutlich andere Ausreißer nach oben. 
+Aus dieser Betrachtung ergeben sich zwei zentrale Erkenntnisse: Einerseits korrelieren alle drei Werte miteinander. Seitenaufrufe und Klicks korrelieren sehr stark, der Umsatz im Vergleich dazu weniger. Die Umsatzkurze zeigt immer wieder Ausreißer nach oben, die in den Seitenaufrufen und Klicks nicht auftauchen.
 
-Der Grund hierfür liegt vor allem in der Berechnungssystematik der Umsätze durch den Merchant Amazon. Als Umsätze werden grundsätzlich nur Waren gezählt, die tatsächlich an den Besteller verschickt wurden. An Sonntagen findet generell (mit der Ausnahme von digitalen Gütern) kein Versand statt. Die Abweichung zwischen Bestell- (Klick) und Versanddatum (Umsatz) kann somit durchaus ein bis zwei Tage umfassen und damit in unterschiedliche Kalenderwochen fallen:
+Der Grund hierfür liegt vor allem in der Berechnungssystematik der Umsätze durch den Merchant Amazon. Als Umsätze werden grundsätzlich nur Waren gezählt, die tatsächlich an den Besteller verschickt wurden. An Sonntagen findet generell (mit der Ausnahme von digitalen Gütern) kein Versand statt. Die Abweichung zwischen Bestell- (Klick) und Versanddatum (Umsatz) kann somit durchaus ein bis zwei Tage umfassen und damit in unterschiedliche Kalenderwochen fallen, was in der folgenden Abbildung deutlich wird.
 
 #### Analyse der Umsätze und Seitenaufrufe für Wochentage
 ```{r}
@@ -754,6 +756,8 @@ Die Abbildung zeigt, dass Umsätze am stärksten Montags generiert werden, wohin
 
 # 3.5 Analyse der Klickraten
 
+# 3.5.1 Analyse der Verteilung
+
 Zur Analyse der ersten Konversionsebene soll das Klickverhalten in Bezug auf die Seitenaufrufe untersucht werden (Click-Through-Rate). 
 
 Hierzu ist es zunächst hilfreich, ein Verständnis davon zu entwickeln wie sich Klicks nicht nur im Zeitverlauf, sondern auch über einzelne Seiten-URLs verteilen. Dabei hilft folgender Boxplot:
@@ -769,39 +773,48 @@ clicks_weekly_tbl %>%
 ```
 Durch diese Grafik wird deutlich, dass ein paar wenige Seiten-URLs die meisten Klicks absolut generieren. Dementsprechend weist die Verteilung einen Tail auf, der viele URLs umfasst, aber in Summe wenig Klicks generiert. Diese Erkenntnis ist für die spätere Benchmark-Modellierung relevant und muss entsprechend berücksichtigt werden.
 
-Um weitere Aussagen über die Performance der CTR treffen zu können, muss zunächst analysiert werden, inwiefern überhaupt eine Varianz  
+Um weitere Aussagen über die Performance der CTR treffen zu können, muss zunächst analysiert werden, inwiefern überhaupt eine Varianz innerhalb der Daten vorliegt.
 
-### Verteilung der CTR insgesamt
-Einschränkung: Seitenaufrufe mindestens 50 (hier: pro Woche). Sonst keine verlässlichen Zahlen möglich.
-Es scheint mindestens 3 Peaks zu geben: um 0.18, 0.27 und unter 0.05.
-Erkenntnis: Ja, es existiert Varianz. Die CTR streut sogar relativ stark um den Mittelwert XXX. Wobei Mittelwert hier offensichtlich kein besonders gutes Lagemaß ist.
 ```{r}
 CTR_mean <- weekly_raw_tbl %>% filter(Pageviews >= 50) %>% select(CTR) %>% unlist %>% mean
 
 weekly_raw_tbl %>%
-  filter(Pageviews >= 50) %>% 
+  select(CTR) %>%
+  ggplot(aes(x=CTR)) +
+  geom_histogram(binwidth = 0.1)
+```
+Betrachtet man diese ungefilterte Darstellung werden vor allem zwei Dinge deutlich: Erstens gibt es sehr viele Beobachtungen, bei denen die CTR 0 ist. Andererseits gibt eineige extreme Ausreißer nach oben mit bis zu 8 Klicks pro Seitenaufruf.
+
+Beide Extremfälle sind für die Ableitung von Benchmarks wenig hilfreich. Daher wird die Verteilung unter der Bedingung analysiert, dass eine Seiten-URL innerhalb einer Woche mindestens 10 Aufrufe pro Tag, das heißt 70 Aufrufe pro Woche erreicht hat. Unterhalb dieser Grenze sind keine Verlässlichen Aussagen möglich.
+
+```{r}
+CTR_mean <- weekly_raw_tbl %>% filter(Pageviews >= 70) %>% select(CTR) %>% unlist %>% mean
+
+weekly_raw_tbl %>%
+  filter(Pageviews >= 70) %>% 
   select(CTR) %>%
   ggplot(aes(x=CTR)) +
   geom_histogram(binwidth = 0.01) + 
   geom_vline(aes(xintercept=CTR_mean))
 ```
+Berücksichtigt man diese Bedingung, ergibt sich ein etwas aussagelkräftigeres Bild. Zum einen existiert eine relativ starke Varianz, das heißt die CTR streut relativ breit um den Mittelwert `r round(CTR_mean, 2)`. Offensichtlich ist der Mittelwert zudem kein optimales Lagemaß, da die Daten nicht normal verteilt sind.
 
-Schwankt der CTR in Abhängigkeit von der Zeit?
-Ergebnis: Nein, der CTR ist über die Zeit relativ konstant, hier scheint kein Muster vorzuliegen
+Schwankt die CTR in Abhängigkeit von der Zeit? Diese Frage beantwortet folgende Abbildung:
 ```{r}
 weekly_raw_tbl %>%
-  filter(Pageviews >= 50) %>% 
+  filter(Pageviews >= 70) %>% 
   select(CTR, CW) %>%
   ggplot(aes(y=CTR, x=CW)) +
   geom_boxplot() +
+  geom_hline(yintercept = CTR_mean) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
+Das Ergebnis: Nein, der CTR-Mittelwert pro Kalenderwoche ist über den Zeitverlauf gesehen relativ konstant. Hier schein kein Muster vorzuliegen.
 
-Vermutung: CTR variiert je nach Seiten-URL, also manche Seiten performen gut, andere weniger.
-Erkenntnis: Stimmt, der CTR schwankt stark nach Seiten-URL (Mittelwert 0.4 und 0.01). Die Sortierung der X-Achse hier erfolgt anhand der absteigenden Seitenaufrufe gesamt dieser Seiten-URL. Zwei Top-URLs haben katastrophale CTR-Werte
+Schankt die CTR nach Seiten-URL, performen also manche Seiten besser als andere?
 ```{r}
 tag_id_order <- weekly_raw_tbl %>%
-  filter(Pageviews >= 50) %>%
+  filter(Pageviews >= 70) %>%
   select(Tag, Pageviews) %>% 
   group_by(Tag) %>% 
   summarize(Pageviews = sum(Pageviews)) %>%
@@ -811,56 +824,33 @@ tag_id_order <- weekly_raw_tbl %>%
 
 weekly_raw_tbl %>%
   arrange(desc(Pageviews)) %>% 
-  filter(Pageviews >= 50) %>% 
+  filter(Pageviews >= 70) %>% 
   select(CTR, Tag) %>%
   mutate(Tag = fct_relevel(Tag, tag_id_order)) %>% 
   ggplot(aes(y=CTR, x=Tag)) +
   geom_boxplot() +
+  geom_hline(yintercept = CTR_mean) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
+Die Erkenntnis: Ja, die CTR variiert sehr stark nach Seiten-URL. Der geringste CTR-Median pro Seiten-URL liegt bei 0,01 und der höchste bei 0,4. Die Sortierung der Seiten-URLs auf der X-Achse erfolgt hier anhand der jeweiligen absoluten Seitenaufrufe in absteigender Reihenfolge. Zwei der Top-5-URLs weisen katastrophale CTR-Werte auf.
 
-Wie verhält sich die CTR im Vergleich zu Seitenaufrufen? Schwankt die CTR in Abhängigkeit von den absoluten Seitenaufrufen?
-Zur Verdeutlichung schauen wir uns den direkten Zusammenhang zwischen Klicks und Pageviews an. Sollte die CTR konstant sein, müssten die Punkte durch eine Regressionsgerade verbunden werden können.
-
-Erkenntnis: Es existiert tatsächlich ein linearer Zusammenhang, je mehr Pageviews, desto mehr Klicks. Allerdings scheinen hier mindestens 2 Gruppen von Daten zu existieren, einige mit guter und einige mit schlechter Performance.
-
-Die Modellierung des CTR-Benchmarks sollte mindestens in Abhängigkeit der Pageviews durchgeführt werden.
-```{r}
-weekly_raw_tbl %>%
-  filter(Pageviews >= 50) %>% 
-  select(Klicks, Pageviews) %>%
-  ggplot(aes(y=Klicks, x=Pageviews)) +
-  geom_point()
-```
-
-Modellierungsversuch der o.g. Verteilung:
+Abschließen soll betrachtet werden, inwiefern die CTR im Vergleich zu den absoluten Seitenaufrufen schwankt. Bleibt die CTR auch bei steigenden Seitenaufrufen konstant? Zur Verdeutlichung wird der direkte Zusammenhang zwischen Klicks und Seitenaufrufen visualisiert. Bliebe die CTR jeweils konstant, müsste die Verteilung durch eine einfache Regressionsgerade modelliert werden können.
 
 ```{r}
-clicks_lm <- lm(Klicks ~ Pageviews, data = weekly_raw_tbl)
-predicted_clicks <- data.frame(Klicks_Prediction = predict(clicks_lm, weekly_raw_tbl), Pageviews=weekly_raw_tbl$Pageviews)
-
 weekly_raw_tbl %>%
-  filter(Pageviews >= 1) %>% 
+  filter(Pageviews >= 70) %>% 
   select(Klicks, Pageviews) %>%
   ggplot(aes(y=Klicks, x=Pageviews)) +
   geom_point() +
-  geom_line(data=predicted_clicks, aes(x=Pageviews, y=Klicks_Prediction), color="blue")
-
+  ggtitle("Verhältnis von Seitenaufrufen zu Klicks, absolut")
 ```
+Die Erkenntnis: Gunrdsätzlich existiert tatsächlich ein linearer Zusammenhang zwischen den Variablen, je mehr Pageviews, desto mehr Klicks. Allerdings scheinen hier mindestens 2 Gruppen von Daten zu existieren, einige mit besserer und einige mit schlechterer Performance.
 
-Qualität des Baseline-Modells:
-Schwache Resultate. Vor allem: Verlertzung der Annahme der Normalverteilung.
-```{r}
-summary(clicks_lm) #r2 0.594
-plot(clicks_lm, which=1)
-
-```
-
-Cluster-Analyse: Auflösung der zwei Sub-Gruppen
+Das Ziel der Analyse ist es, einen geeigneten Benchmark für die Kennzahl CTR abzuleiten. Aus diesem Grund soll die Datengruppe mit schlechterer Performance gezielt ausgeschlossen werden. Um diese Daten mit schlechter Performance zu markieren, soll eine Clusteranalyse durchgeführt werden.  
 
 ```{r}
 ctr_df <- weekly_raw_tbl %>%
-  filter(Pageviews > 1) %>% 
+  filter(Pageviews > 70) %>% 
   select(Klicks, Pageviews, CTR, Tag) %>% 
   mutate(Klicks_scaled = scale(Klicks),
          Pageviews_scaled = scale(Pageviews))
@@ -874,10 +864,13 @@ ctr_df <- ctr_df %>%
 
 ctr_df %>% 
   ggplot(aes(x=Pageviews, y=Klicks, color=Cluster)) +
-  geom_point()
+  geom_point() +
+  ggtitle("Cluster-Analyse: Auflösung der zwei Sub-Gruppen")
 ```
+Als Clusteralgorithmus wird k-Means verwendet. Als Zielclusterannahme wird k = 10 definiert, was sich nach einigen Versuchen als guter Kompromiss zwischen Clusteranzahl und Clusterähnlichkeit herausstellte.
 
-CTR-Analyse der Cluster
+Nun ist es ein leichtes, die durchschnittliche CTR pro Cluster zu berechnen und die Cluster mit den jeweils geringsten CTR-Medianen als Low-Performer zu markieren.
+
 ```{r}
 median_ctr <- median(ctr_df$CTR)
 
@@ -885,8 +878,11 @@ ctr_df %>%
   ggplot(aes(x=Cluster, y=CTR)) +
   geom_boxplot() +
   geom_hline(yintercept = median_ctr) +
-  coord_cartesian(ylim = c(0,1))
-
+  coord_cartesian(ylim = c(0,1)) +
+  ggtitle("CTR Verteilung über die Cluster")
+```
+Es sollen nur solche Cluster in die Benchmarkmodellierung einfließen, deren Cluster-Median mindestens die Hälfte des gesamten Medians beträgt. Folgende Cluster bleiben so übrig: 
+```{r}
 #Cluster aussortieren, die deutlich vom CTR-Median entfernt liegen.
 clusters_perform <- ctr_df %>% 
   group_by(Cluster) %>% 
@@ -895,72 +891,127 @@ clusters_perform <- ctr_df %>%
   select(Cluster) %>% 
   unlist
 
-```
-
-```{r}
-ctr_perform_df <- ctr_df %>% 
+#Performance-Median berechnen, der später noch benötigt wird.
+median_ctr_performance <-
+  ctr_df %>% 
   filter(Cluster %in% clusters_perform) %>% 
-  filter(Klicks >= 10)
+  select(CTR) %>% 
+  summarise(median(CTR)) %>% 
+  unlist
 
-ctr_perform_df %>% 
-  ggplot(aes(x=Pageviews, y=Klicks, color=Cluster)) +
-  geom_point()
+print(clusters_perform)
 ```
 
-Modellierung: Regression nach Clustering
-Zuerst: Normalverteilung erreichen
+Beschränkt man die Verteilung von Seitenaufrufen zu Klicks nun auf die verbliebenen Cluster, ergibt sich folgendes Bild:
+```{r}
+ctr_df %>% 
+  filter(Cluster %in% clusters_perform) %>% 
+  ggplot(aes(x=Pageviews, y=Klicks, color=Cluster)) +
+  geom_point() +
+  ggtitle("Verhältnis von Seitenaufrufen zu Klicks, absolut, nach Bereinigung")
+```
+Diese Verteilung lässt sich nun gut mittels einer Regression modellieren, wobei Seitenaufrufe (Pageviews) als Input- und Klicks als Output-Variable gelten.
+
+Da die Variablen Klicks und Pageviews wie oben gezeigt nicht normalverteilt sind, muss diese Annahme zunächst hergestellt werden. In dem vorliegenden Fall geschieht dies über eine Log-Transformation:
+
 ```{r echo=FALSE}
 #Log-Transformation der Predictors zur besseren Modellierung:
-ctr_perform_df <- ctr_perform_df %>% 
+ctr_modelling_df <- 
+  ctr_df %>% 
+  filter(Cluster %in% clusters_perform) %>% 
   mutate(logKlicks = log1p(Klicks),
          logViews = log1p(Pageviews))
 
-ctr_perform_df %>% 
-  ggplot(aes(y=logViews, x=logKlicks)) +
-  geom_point()
-
-
+ctr_modelling_df %>% 
+  select(logKlicks, logViews) %>% 
+  gather("Variable", "Log") %>% 
+  ggplot(aes(x=Log)) +
+  geom_histogram(binwidth = .5) +
+  facet_grid(.~Variable)
 ```
+Beide Variablen nähern sich nun deutlich besser einer Normalverteilung an. Die abgeschnitten wirkende Verteilung der logViews resultiert aus der Vorbedingung, dass in der Modellierung nur Seiten-URLs mit mindestens 70 Aufrufen pro Woche betrachtet wurden.
 
-Neue Regressionsmodellierung
+# 3.5.1 Regressionsmodellierung zur Vorhersage der Klicks in Abhängigkeit von Seitenaufrufen
+
 ```{r}
 #Temporäres Modell zur Ausreißererkennung in den Reisduen
-clicks_lm_1 <- lm(logKlicks ~ logViews, data = ctr_perform_df)
+clicks_lm_1 <- lm(logKlicks ~ logViews, data = ctr_modelling_df)
+summary(clicks_lm_1)
+```
+Das erste Modell trifft die Daten mit einem $R^2$ Wert von `r round(summary(clicks_lm_1)$r.squared,2)` noch nicht besonders gut. Eine Ausreißeranalyse auf den Residuen soll helfen, dass Modell weiter zu verbessern. Als Algortihmus wird ein Hampel-Test verwendet.
+
+```{r}
 #Ausreißer markieren
-ctr_perform_outliers <- hampel.proc(clicks_lm_1$residuals)
+ctr_modelling_outliers <- hampel.proc(clicks_lm_1$residuals)
 
 #Neues Modell ohne Ausreißer
-clicks_lm_2 <- lm(logKlicks ~ logViews, data=ctr_perform_df[-ctr_perform_outliers,])
-print(summary(clicks_lm_2)) #.83 r-squared
-plot(clicks_lm_2, which=1:4)
-print(shapiro.test(clicks_lm_2$residuals)) #.9755
-
-#Normalverteilung der Residuen
-clicks_lm_2$residuals %>% 
-  as_tibble() %>% 
-  rename(Residuals = value) %>% 
-  ggplot(aes(x=Residuals)) +
-  geom_histogram(binwidth = .5) +
-  theme_minimal() +
-  ggtitle("Residuals of Model Clicks_LM_2")
-
+clicks_lm_2 <- lm(logKlicks ~ logViews, data=ctr_modelling_df[-ctr_modelling_outliers,])
+print(summary(clicks_lm_2))
 ```
 
-ausgewähltes Modell:
+Das neue Modell nach Ausreißeranalyse trifft die Daten mit einem $R^2$ von `r round(summary(clicks_lm_2)$r.squared,2)` noch etwas besser. Die Analyse der Residuen soll zeigen, ob diese auch normalverteilt und das Modell damit akzeptabel ist:
 
 ```{r}
-clicks_lm_2
+plot(clicks_lm_2, which=1)
+```
+Das Ergebnis: Das Modell trifft bei besonders kleinen prognostizierten Klicks die Daten noch nicht besonders gut. Dies dürfte darin begründet sein, dass mit der initialen Annahme von 70 Seitenaufrufen, eine Menge Zugriffe mit sehr wenig Traffic herausgefiltert wurde, aber gleichzeitig immer noch sehr viele Beobachtungen auftauchen, die wenig bis gar keine Klicks zeigen. 
+
+In den Performance-Cluster beträgt der Median-CTR, dass im Duchschnitt pro Seitenaufruf mindestens `r round(median_ctr_performance,2)` Klicks generiert werden sollten, bedeutet das für 70 Seitenaufufe pro Woche mindestens `r round(median_ctr_performance * 70,0)` Klicks absolut. Das Modellierungs-Datenset soll daher auch auf diese Anzahl von Minimum-Klicks beschränkt werden:
+
+
+```{r}
+#Log-Transformation der Predictors zur besseren Modellierung:
+ctr_modelling_df <- 
+  ctr_df %>% 
+  filter(Cluster %in% clusters_perform & Klicks >= round(median_ctr_performance * 70,0) ) %>% 
+  mutate(logKlicks = log1p(Klicks),
+         logViews = log1p(Pageviews))
+
+p <- ctr_modelling_df %>% 
+  select(logKlicks, logViews) %>% 
+  gather("Variable", "Log") %>% 
+  ggplot(aes(x=Log)) +
+  geom_histogram(binwidth = .3) +
+  facet_grid(.~Variable)
+
+print(p)
+
+#Temporäres Modell zur Ausreißererkennung in den Reisduen
+clicks_lm_3 <- lm(logKlicks ~ logViews, data = ctr_modelling_df)
+
+#Ausreißer markieren
+ctr_modelling_outliers <- hampel.proc(clicks_lm_3$residuals)
+
+#Neues Modell ohne Ausreißer
+clicks_lm_4 <- lm(logKlicks ~ logViews, data=ctr_modelling_df[-ctr_modelling_outliers,])
+print(summary(clicks_lm_4))
+
+plot(clicks_lm_4, which=1)
+```
+Das Modell ClicksLM_4 verbessert sich durch diesen zusätzlichen Constraint auf einen $R^2$ von `r round(summary(clicks_lm_4)$r.squared,2)` und weist gleichzeitig eine besser normalverteile Darstellung der Residuen auf. Der hohe Wert des Shapiro-Wilk-Test auf Normalverteilung der Residuen bestätigt diese Annahme:
+
+```{r}
+shapiro.test(clicks_lm_4$residuals)
 ```
 
-Benchmarking: Berechne Benchmarks und füge diese an Gesamtdatensatz an
+Das Modell Clicks_LM_4 lässt sich nun dafür nutzen, um die Benchmark-Klicks im gesamten Datensatz, das heißt auch für alle Seitenaufrufe unter 70 zu verwenden. Des weiteren wird eine zusätzliche Spalte angefügt, die angibt ob der Benchmark jeweils erreichgt wurde oder nicht:
+
 ```{r}
-weekly_raw_tbl$Klicks_Benchmark <- round(expm1(predict(clicks_lm_2, weekly_raw_tbl %>% mutate(logViews = log1p(Pageviews)))),0)
+weekly_raw_tbl$Klicks_Benchmark <- round(expm1(predict(clicks_lm_4, weekly_raw_tbl %>% mutate(logViews = log1p(Pageviews)))),0)
 
 weekly_raw_tbl <- 
   weekly_raw_tbl %>% 
   mutate(Klicks_Benchmark_erreicht = ifelse(Klicks >= Klicks_Benchmark, TRUE, FALSE))
 
+weekly_raw_tbl %>% 
+  select(Tag, CW, Klicks, Klicks_Benchmark, Klicks_Benchmark_erreicht) %>% 
+  filter(CW == "2017-51") %>% 
+  arrange(desc(Klicks_Benchmark)) %>%
+  head(10)
+```
 
+
+```{r}
 weekly_raw_tbl %>%
   filter(Pageviews >= 1) %>% 
 
