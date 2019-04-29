@@ -1,10 +1,14 @@
 ---
-title: "Anwendung explorativer Datenanalyse zur Identifikation von Optimierungspotenzialen hinsichtlich des Umsatzes am Beispiel eines On-line-Publishers mit Affiliate-Ansatz"
+title: Anwendung explorativer Datenanalyse zur Identifikation von Optimierungspotenzialen
+  hinsichtlich des Umsatzes am Beispiel eines Online-Publishers mit Affiliate-Ansatz
 author: "Tobias Zwingmann"
-date: "9 1 2019"
-output: 
-  pdf_document: 
-    latex_engine: xelatex
+date: "30 4 2019"
+output:
+  word_document:
+    fig_height: 7
+    fig_width: 7
+    toc: yes
+  pdf_document:
     toc: yes
 ---
 
@@ -72,11 +76,9 @@ mav <- function(x,n=5){filter(x,rep(1/n,n), sides=2)}
 
 ## 1.1 Thema des Projektes
 
-Die weltweite Menge an Daten wächst explosionsartig an. Dank neuer Technologien und günstiger Speichermedien produziert die Menschheit mehr Daten als jemals zuvor in ihrer Geschichte.  Besonders betroffen von dieser Entwicklung ist die Internetwirtschaft, eine Industrie, die per se mit der Generierung und Speicherung großer Datenmengen eng verbunden ist. Grundsätzlich versprechen sich Unternehmen von der Auswertung ihrer Datenbestände vor allem Wettbewerbsvorteile, Hinweise auf Einspa-rungspotenziale oder Impulse für neue Geschäftsfelder. Wie genau allerdings die angehäuften Datenmengen in wirtschaftlich nutzbare Informationen umgewandelt werden können, stellt viele Firmen immer noch vor große Herausforderungen. 
-
 Im vorliegenden Projekt wird für ein Unternehmen im Bereich Online-Marketing ein Informationsportal untersucht, welches in erster Linie durch die Ausspielung programmatischer Werbeanzeigen sowie durch im Content platzierte Affiliate-Links Erlöse erzielt.
 
-Während vom Seitenbetreiber Daten bereits in Echtzeit genutzt werden, um beispielsweise die Auslieferung und Positionierung von Werbeanzeigen automatisch zu optimieren, bedarf es auf strategischer Ebene anderer Ansätze, um der Datenflut Herr zu werden und daraus Ableitungen für das Geschäftsmodell zu treffen.
+Während vom Seitenbetreiber Daten bereits in Echtzeit genutzt werden, um beispielsweise die Auslieferung und Positionierung von Werbeanzeigen automatisch zu optimieren, bedarf es auf strategischer Ebene anderer Ansätze, um die richtigen Entscheidungen für die Entwicklung des Geschäftsmodells zu treffen.
 
 Im Projekt wünscht sich die Unternehmensleitung eine Einschätzung darüber, wie einzelne Inhalte und Themen auf dem Informationsportal zukünftig besser positioniert werden könnten, um die Gesamteinnahmen der Seite dauerhaft zu erhöhen. Dabei geht es explizit nicht um die Optimierung einzelner Klickpreise per se, sondern vorgelagert um die Generierung strategischer Handlungsempfehlungen, die entsprechende Aktionen für bestimmte Themenbereiche der Seite vorschlägt.
 
@@ -86,32 +88,23 @@ Diese Analysen sollen überwiegend durch quantitative Informationen aus verschie
 
 Zur Erstellung dieser strategischen Handlungsempfehlungen im Kontext des Online-Marketings (hier speziell: Affiliate-Marketing) müssen folgende zwei zentrale Probleme geklärt werden:
 
-Das erste Problem bezieht sich auf die Definition eines Sets von Erfolgskennzahlen (KPIs). Als konzeptionelles Rahmengerüst dienen hierbei die branchenüblichen Referenzwerte Klickrate (CTR) und Umsatz-Pro-Klick (RPC). Diese beiden Kennzahlen müssen zum einen hinreichend konkretisiert (z. B. Definition des Zeitbezugs) und zum anderen in eine sinnhafte Verbindung miteinander gebracht werden. Die für die Berechnung der Kennzahlen notwendigen Daten liegen typischerweise in unterschiedlichen Systemen vor (hier: Google Analytics für CTR und Amazon Partnernet für RPC). Zur Auflösung dieses Problems werden einerseits fest definierte Regelwerke (Business Rules) und geeignete Primärschlüssel zur Verknüpfung unterschiedlicher Datenquellen benötigt.
+Das erste Problem bezieht sich auf die Definition eines Sets von Erfolgskennzahlen (KPIs). Als konzeptionelles Rahmengerüst dienen hierbei die branchenüblichen Referenzwerte Klickrate (CTR) und Umsatz-Pro-Klick (RPC). Diese beiden Kennzahlen müssen zum einen hinreichend konkretisiert (z. B. Definition des Zeitbezugs) und zum anderen in eine sinnhafte Verbindung miteinander gebracht werden. Die für die Berechnung der Kennzahlen notwendigen Daten liegen in unterschiedlichen Systemen vor (hier: Google Analytics für CTR und Amazon Partnernet für RPC). Zur Auflösung dieses Problems werden einerseits fest definierte Regelwerke (Business Rules) und geeignete Primärschlüssel zur Verknüpfung unterschiedlicher Datenquellen benötigt.
 
 Die zweite Problemdimension bezieht sich auf die qualitative Beurteilung der einzelnen Kennzahlen, d.h. konkret: Ab wann ist ein bestimmter Wert für eine gegebene KPI gut oder schlecht? Unterschiedliche Unterseiten haben unterschiedliche Besucher und Klickraten sowie Umsätze unterliegen zum Teil starken Schwankungen im Zeitverlauf (z. B. Abhängigkeit von Wochentagen). Daher reichen Trivialmodelle wie zum Beispiel statistische Mittelwerte zur Einschätzung der Güte einer KPI-Kennzahl nicht aus.
 
-Als Lösung bieten sich maschinelle Lernverfahren an, die die schiefe Verteilung der Input-Daten entsprechend berücksichtigen und valide Einschätzungen erlauben, ob beispielsweise ein zu einer bestimmten Zeit und auf einer bestimmten Seite erreichter CTR-Wert akzeptabel ist, oder nicht. 
+Als Lösung bieten sich statistische Verfahren an, die beispielsweise die schiefe Verteilung der Input-Daten entsprechend berücksichtigen und valide Einschätzungen erlauben, ob ein zu einer bestimmten Zeit und auf einer bestimmten Seite erreichter CTR-Wert akzeptabel ist, oder nicht. 
 
-Im Anschluss an die Bearbeitung der beiden zuvor genannten Probleme stellt sich außerdem die Frage, in welcher Form die gewonnenen Ergebnisse genutzt oder kommuniziert werden sollen. Die zentralen Anforderungen hier sind: instruktive Visualisierung, Interaktivität und programmatische Reproduzierbarkeit. Auf diese Weise soll eine aussagekräftige Visualisierung erzeugt werden, die zudem idealerweise programmatisch jederzeit neu generierbar und erweiterbar ist, ohne den kompletten Prozess jeweils komplett neu starten zu müssen.
+Zur Kommunikation der Ergebnisse wird eine instruktive Visualisierung angestrebt, die die Handlungsempfehlungen klar aufzeigt. Diese Visualisierung soll zudem programmatisch reproduzierbar sein, sodass die gewonnenen Einsichten auf Basis neuer Daten schnell erneut ausgewertet bzw. erneut Entscheidungen getroffen werden können.
 
 ## 1.3 Zielsetzung 
 Als zentrales Deliverable soll eine interaktive Visualisierung erstellt werden, die eine Einordnung von einzelnen Unterseiten des Informationsportals mit geeigneten KPIs in eine strategische Handlungsfeldmatrix vornimmt und entsprechende Handlungsempfehlungen vorschlägt, wie der im Beispielfall generierte Umsatz weiter gesteigert werden kann.
 
-
 # 2. Einordnung in den Kontext Data Science
-Die Lösung der gegebenen Problemstellung erfordert die effiziente Verknüpfung spezifischen Domänenwissens, statistischer Kenntnisse sowie der programmiertechnischen Fähigkeit zur Handhabung der unterschiedlichen Datenformate und Quellsysteme in Verbindung mit einer entsprechenden Datenmodellierung zur Ableitung zielführender Erkenntnisse. Der Schwerpunkt der Arbeit liegt auf der Datenanalyse und hier insbesondere auf dem Teilbereich Data Preparation, d. h. die sinnvolle Verknüpfung und pro-grammatische Aufbereitung der Input-Daten zur korrekten Berechnung der KPIs (CTR und RPC) sowie in der anschließenden Modellentwicklung zur Bewertung der KPI-Performance (Score-Wert).
-
-**In diesem Abschnitt sollen Aufgabe und Lösungsansätze in den Kontext existierender Ansätze im Bereich Data Science gestellt und auch alternative Lösungswege, die nicht beschritten wurden, dargestellt werden. Zunächst soll der Zusammenhang zu den Themen der Zertifizierung dargestellt werden: 
-Wie und an welcher Stelle bestehen Zusammenhänge insbesondere zu folgenden Themengebieten? 
-
-- (Big) Data Analytics 
-- Visualisierung 
-Anschließend soll die Arbeit auch im Kontext des erworbenen Spezialisten-Zertifikats (z. B. „Data Scientist Specialized in Data Management“, „Data Scientist Specialized in Data Analytics“ oder „Data Scientist Specialized in Machine Learning“) im Hinblick auf die gewählte Vertiefung beleuchtet werden.**
-
+Die Lösung der gegebenen Problemstellung erfordert die effiziente Verknüpfung spezifischen Domänenwissens, statistischer Kenntnisse sowie der programmiertechnischen Fähigkeit zur Handhabung der unterschiedlichen Datenformate und Quellsysteme in Verbindung mit einer entsprechenden Datenmodellierung zur Ableitung zielführender Erkenntnisse. Der Schwerpunkt der Arbeit liegt auf der Datenanalyse und hier insbesondere auf dem Teilbereich der Visualisierung, d. h. die instruktive Darstellung komplexer Sachverhalte in programmatischet Form. Für dieses Ziel fließt ein Großteil der Arbeit in die entsprechende Aufbereitung der Input-Daten zur korrekten Berechnung der KPIs (CTR und RPC) sowie der anschließenden Modellentwicklung zur Bewertung der KPI-Performance (Score-Wert), die dann abschließend visualisiert werden können.
 
 # 3. Dokumentation des Lösungsweges
 
-# 3.1 Business Understanding
+## 3.1 Business Understanding
 
 ## 3.1.1 Affiliate Marketing als Geschäftsmodell
 
@@ -121,11 +114,7 @@ Eine Affiliate-Partnerschaft besteht typischerweise aus einer Dreiecksbeziehung 
 
 Merchant und Affiliate gehen dabei eine Kooperation ein: Der Webseitenbetreiber (Affiliate) bewirbt Produkte des Merchants auf seiner Website und wirkt damit als Absatzmittler des Merchants.  Im Gegenzug erhält der Webseitenbetreiber eine erfolgsabhängige Vergütung. Das Verhältnis von Affiliate, Merchant und Webseitenbe-suchern ist schematisch in Abbildung 2 dargestellt. Affiliate Marketing kann damit als Übertragung des seit Jahrzehnten existierenden Prinzips der Vertriebs- oder Netzwerkpartner in die Online-Welt gesehen werden. (Vgl. Lammenett, E. (2015), S. 45.)
 
-```{r}
-# Abbildung 2: Beziehungen im Affiliate-Marketing
-
-print("Quelle: Eigene Darstellung")
-```
+[**Abbildung 2: Beziehungen im Affiliate-Marketing**]
 
 In der Regel bauen Merchants über Affiliate-Programme (Partnerprogramme) sehr viele Kooperationen zu unterschiedlichen Publishern auf. Das Ziel dabei ist es, den Zugang zu kontext- oder zielgruppenrelevanten Content- bzw. Community-Webseiten (Nischenwebseiten) zu verbessern. Zwar weisen diese Webseiten in der Regel im Vergleich zu reichweitenstarken Plattformen eine geringere Besucherfrequenz auf, bieten dafür aber eine erhöhte Themenrelevanz und damit bessere Chancen für einen Geschäftsabschluss (Vgl. Lücke, F., Webering, J. (2003), S. 13 sowie Tollert, D. (2009), S. 12.).
 
@@ -136,13 +125,7 @@ Der essenzielle Unterschied zwischen Affiliate-Marketing und der herkömmlichen 
 In der klassischen Bannerwerbung werden hingegen häufig die reine Einblendung eines Werbemittels (Pay per View) oder der Klick auf ein Werbemittel (Pay per Click) vergütet. Darüber hinaus existieren natürlich auch Mischformen, sodass in einigen Fällen auch Affiliate-Programme mit beispielsweise einer Pay-per-Click-Abrechnung angeboten werden. Diese Formate kommen in der Gesamtbetrachtung allerdings äußerst selten vor. 
 
 Eine schematische Darstellung der Abgrenzung zwischen klassischem Online-Marketing und Affiliate-Marketing ist in Abbildung 3 zu sehen.
-
-```{r}
-# Abbildung 3: Abbildung 3: Abgrenzung des klassischen Online-Marketings und des Affiliate-Ansatzes anhand der Vergütungsmodelle im E-Business
-
-print("Quelle: Eigene Abbildung nach: Kollmann, T. (2011): S. 301")
-
-```
+[**Abbildung 3: Abbildung 3: Abgrenzung des klassischen Online-Marketings und des Affiliate-Ansatzes anhand der Vergütungsmodelle im E-Business**]
 
 
 ## 3.1.2 Definition relevanter Kennzahlen
@@ -152,9 +135,9 @@ Im klassischen PPC-Ansatz bilden die sogenannte „Click-Through-Rate“ (CTR) u
 
 Zur weiteren Erläuterung sollen nachfolgend einige Notationen und Definitionen eingeführt werden. 
 
-Die Indexvariable s bezeichnet im Kontext der vorliegenden Arbeit eine jeweils fest definierte Seiten-URL, inklusive der dieser Seite zugeordneten Werbemittel. Die 
-Indexvariable t referenziert eine bestimmte Periode, in der Leistungen (z. B. Klicks oder Umsätze) beobachtet wurden. Die Perioden weisen untereinander jeweils die gleiche Länge auf und überschneiden sich zeitlich nicht. Eine Periode ist beispielsweise ein genaues Tagesdatum. Die Anzahl aller Perioden wird mit der Variable p gekennzeichnet und als Beobachtungszeitraum definiert. Die Anzahl aller Seiten-URLs wird mit der Variable n notiert, die zugleich als Seitenumfang dient.
-Die Anzahl der Aufrufe einer bestimmten Seiten-URL in einer festgelegten Periode t wird als v_st definiert. Entsprechend lässt sich die Menge aller Aufrufe je Seiten-URL in allen beobachteten Perioden als Matrix mit n × p Elementen von v_st darstellen (Formel 1).
+Die Indexvariable $s$ bezeichnet im Kontext der vorliegenden Arbeit eine jeweils fest definierte Seiten-URL, inklusive der dieser Seite zugeordneten Werbemittel. Die  Indexvariable $t$ referenziert eine bestimmte Periode, in der Leistungen (z. B. Klicks oder Umsätze) beobachtet wurden. Die Perioden weisen untereinander jeweils die gleiche Länge auf und überschneiden sich zeitlich nicht. Eine Periode ist beispielsweise ein genaues Tagesdatum. Die Anzahl aller Perioden wird mit der Variable $p$ gekennzeichnet und als Beobachtungszeitraum definiert. Die Anzahl aller Seiten-URLs wird mit der Variable $n$ notiert, die zugleich als Seitenumfang dient.
+
+Die Anzahl der Aufrufe einer bestimmten Seiten-URL in einer festgelegten Periode $t$ wird als $v_{st}$ definiert. Entsprechend lässt sich die Menge aller Aufrufe je Seiten-URL in allen beobachteten Perioden als Matrix mit $n × p$ Elementen von $v_{st}$ darstellen (Formel 1).
 
 Matrizen werden nachfolgend mit fettgedruckten Großbuchstaben symbolisiert.
 
@@ -220,8 +203,7 @@ Der Gesamtumsatz einer Website mit PPC-Ansatz entspricht letztlich den kumuliert
 *Formel 12: Berechnung des Umsatzes im PPC-Ansatz*
 $$U≔\left( \sum_{(i=1)}^kV_i \right) \overline{CTR} × \overline{CPC} )$$
 
-Unter der Annahme, dass die seitenweite durchschnittliche CTR und die durchschnittlichen CPC konstant bleiben, führt ein Anstieg der Seitenaufrufe zu einem 
-höheren Gesamtumsatz. Gleichfalls erhöht sich der Umsatz auch dann, wenn bei konstanten Seitenaufrufen die durchschnittliche CTR oder die durchschnittlichen CPC oder beide Kennzahlen gleichzeitig gesteigert werden. 
+Unter der Annahme, dass die seitenweite durchschnittliche CTR und die durchschnittlichen CPC konstant bleiben, führt ein Anstieg der Seitenaufrufe zu einem höheren Gesamtumsatz. Gleichfalls erhöht sich der Umsatz auch dann, wenn bei konstanten Seitenaufrufen die durchschnittliche CTR oder die durchschnittlichen CPC oder beide Kennzahlen gleichzeitig gesteigert werden. 
 
 Die Systematik der Umsatzermittlung bei Webseiten mit PPS-Ansatz ist hierzu fast identisch. Der wesentliche Unterschied liegt lediglich in der Substitution der Kennzahl CPC durch die Kenngröße Revenue-per-Click (RPC). RPC gibt die Höhe der vermittelten Netto-Umsätze im Verhältnis zu den Klicks auf ein oder mehrere Werbemittel an.  
 
@@ -241,10 +223,12 @@ Die Kennzahl RPC ergibt sich entsprechend der Berechnung der CPC als Quotient de
 $$rpc_{st}≔\frac{r_{st}}{c_{st}} $$
 
 Die Matrix RPC ergibt sich entsprechend der Formel 16.
+
 *Formel 16: Definition der Matrix* $\mathbf{RPC}$
 $$\mathbf{RPC}∶=(rpc_{st})_{s=1,…,n;t=1,…,p}∈ \mathbb{R}^{n×p}$$
 
 Auch hier soll die Vektorisierung der Matrix definiert werden, sodass alle Elemente von $\mathbf{RPC}$ auch in Form eines Vektors $RPC$ dargestellt werden können. Die Vektorisierung ist in Formel 17 formuliert.
+
 *Formel 10: Definition der Vektorisierung der Matrix* $\mathbf{RPC}$
 $$RPC ≔ vect(\mathbf{RPC}) ≔(rpc_{11}, rpc_{12} ,… , rpc_{1p} ,… , rpc_{n1} ,… , rpc_{np})≔ (rpc_{st})∈ \mathbb{R}^{np}$$
 
@@ -270,15 +254,13 @@ Das hier vorgestellte Projekt trägt den Titel „HDMI Guru“ und wird im Folge
 
 Aufgrund der hohen thematischen Spezialisierung und der relativ überschaubaren Reichweite kann diese Seite auch als typischer Vertreter eines Nischenwebseiten-Konzeptes angesehen werden. Abbildung 4 zeigt exemplarisch die Startseite des Fallbeispiels.
 
-```{r}
-# Abbildung 4: Screenshot der Startseite des Fallbeispiels
-```
+[**# Abbildung 4: Screenshot der Startseite des Fallbeispiels**]
 
 Das Geschäftsmodell der Webseite basiert im Wesentlichen auf einem Affiliate-Ansatz. Rund 90 % der Umsätze werden über das deutschsprachige Partnerprogramm von Amazon.de generiert. Hierüber werden an Amazon vermittelte Einkäufe in den Ländern Deutschland, Österreich und der Schweiz abgedeckt. 
 
 Die übrigen rund 10 % der Einnahmen generieren sich durch Pay-Per-Click Werbeeinblendungen, die vom Google-Adsense-Netzwerk bereitgestellt werden.
 
-Im Zeitraum 01. September 2015 bis 31. August 2016 wurden so mithilfe des Amazon Partnerprogramms rund 28.000 Produkte im Gesamtwert von rund 470.000 Euro (Netto-Umsatz) vermittelt. 
+Im Jahr 2018 wurden so mithilfe des Amazon Partnerprogramms rund 26.000 Produkte im Gesamtwert von rund 430.000 Euro vermittelt. 
 
 Aufgrund der hohen Relevanz des Amazon-Partnerprogramms für den Geschäftserfolg der vorgestellten Affiliate-Webseite soll dieses Programm nachfolgend in den wesentlichen Grundzügen erläutert werden:
 
@@ -290,10 +272,7 @@ Ein Publisher kann mehrere Tracking-IDs zur Identifizierung unterschiedlicher We
 
 Die Teilnahme am Amazon-Partnerprogramm ist für Webseitenbetreiber kostenlos. Statistiken zur Leistungsfähigkeit des Programms können durch den Affiliate über das Analyse- und Abrechnungstool „Amazon PartnerNet“ erstellt werden. Abbildung 5 zeigt exemplarisch ein Bildschirmfoto des Amazon PartnerNets.
 
-```{r}
-# Abbildung 5: Screenshot Amazon PartnerNet
-```
-
+[**# Abbildung 5: Screenshot Amazon PartnerNet**]
 
 Die Besucher des Fallbeispiels werden hauptsächlich über Suchmaschinenmarketing akquiriert: Rund 85 % der Webseitenbesucher erreichen das Angebot über die organische Suche von Google.de. Rund 12 % der Besucher gelangen per Direkt-zugriff auf die Seite. Weitere 3 % gelangen über Verweise von anderen Webseiten oder sozialen Netzwerken auf das Angebot. 
 
@@ -305,9 +284,7 @@ Dies sind in der Regel Verweise auf Kabel, Adapter oder weitere Elektronikzubeh�
 
 In Abbildung 6 ist beispielhaft die Platzierung der Seiten-URLs des Fallbeispiels in den organischen Suchergebnissen der deutschsprachigen Google-Suche dargestellt. 
 
-```{r}
-# Abbildung 6: Beispielplatzierung des Fallbeispiels in den Suchergebnissen der deutschsprachigen Google-Suche
-```
+**# Abbildung 6: Beispielplatzierung des Fallbeispiels in den Suchergebnissen der deutschsprachigen Google-Suche**
 
 Zur Messung der Webseiten-Metriken wird das kostenlose und zugleich weit verbreitete Tool „Google Analytics“ eingesetzt. Über Google Analytics werden unter anderem Zugriffe auf einzelne Beiträge (Artikel) über die jeweiligen (im Zeitverlauf gleichbleibenden) Artikel-URLs ausgewertet. 
 
@@ -315,28 +292,65 @@ Das Tracking der Affiliate-Performance wird über sogenannte Tracking-IDs realis
 
 Die im Amazon PartnerNet hinterlegten Tracking-IDs stellen somit einen eindeutigen inhaltlichen Bezug zu den einzelnen Seiten-URLs in Google Analytics her und können als Schlüssel angesehen werden, der Daten aus Google Analytics und Amazon Partnernet verknüpft.
 
-Als Untersuchungszeitraum wird der zum Zeitpunkt des Beginns dieser Arbeit aktuellste Zwölfmonatszeitraum vorgegeben. Dies entspricht dem 01. Januar 2015 bis 31. August 2016.
+Als Untersuchungszeitraum wird der zum Zeitpunkt des Beginns dieser Arbeit aktuellste Zwölfmonatszeitraum vorgegeben. Dies entspricht dem 18. Dezember 2017 bis 16. Dezember 2018.
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
+## 3.2 Data Understanding
+
+Die zur Analyse des Fallbeispiels benötigten Daten werden von zwei unterschiedlichen Quellen bereitgestellt: Besucherzahlen werden über das Tool Google Analytics erhoben, Daten zu Klicks und vermittelten Umsätzen über das Amazon PartnerNet.
+
+Die Daten aus Google Analytics werden in Form von kommagetrennten Text-Dateien (CSV) angeliefert. Google Analytics generiert pro Seiten-URL eine CSV-Datei für einen individuell einstellbaren Zeitraum. Im Fallbeispiel wurden somit 13 unterschiedliche CSV-Dateien für jeweils den gleichen Zeitraum zwischen 18.12.2017 und 16.12.2018 generiert. Der Aufbau der CSV-Dateien ist identisch. Jede CSV-Datei enthält einen sogenannten Header-Bereich, der aggregierte Informationen und Metadaten zur aktuellen Datei anzeigt, und den eigentlichen Datenbereich, der zwei Spalten (Datum und Seitenaufrufe) zum ausgewählten Zeitraum umfasst. Ein Auszug aus der Export-CSV-Datei für die Seiten-URL http://www.welches-hdmi-kabel.de/hdmi-kabel-unterschiede/ ist in Abbildung 14 dargestellt.
+
+**#Abbildung 14: Auszug einer Export-Datei (CSV) aus Google Analytics**
+
+Um Informationen zu Klicks und Umsätzen zu erhalten, müssen zwei verschiedene Berichte aus dem Amazon PartnerNet generiert werden.
+
+Der sogenannte Tracking-ID-Kurzbericht enthält Informationen zur Summe der Klicks, die jeweils über die einzelnen Tracking-IDs des Partners im Berichtzeitraum generiert wurden. Die Tracking-ID-Kurzberichte werden ebenfalls als CSV-Dateien angeliefert und enthalten eine jeweils wöchentliche Zusammenfassung der Klicks über alle Seiten-URLs. Im Fallbeispiel ergibt dies 52 Textdateien für die definierten zwölf Berichtsmonate.
+
+Die Textdateien sind identisch aufgebaut und erhalten neben den Angaben zu Klicks auch Informationen zu den in der jeweiligen Woche für die einzelnen Tracking-IDs generierten Bestellungen. Abbildung 15 zeigt einen Auszug für den Tracking-ID-Kurzbericht des Zeitraums 01.01.2018 bis 07.01.2018.
+
+**#Abbildung 15: Auszug einer Export-Datei (TXT) eines Tracking-ID-Kurzberichts aus dem Amazon PartnerNet**
+
+Die benötigten Informationen zu den vermittelten Umsätzen werden nicht in die Tracking-ID-Kurzberichte exportiert. Hierzu muss ein sogenannter „Werbekosten-Erstattungsbericht“ erstellt werden. Der Werbekosten-Erstattungsbericht wird in Form einer XML-Datei angeliefert, die Informationen zu allen im Berichtszeitraum vermittelten Produkten enthält, inklusive der daraus resultierenden Umsätze und Provisionen (Werbekostenerstattung). Auch sind Informationen zum jeweiligen Bestelldatum und zur jeweiligen Tracking-ID, über die der Umsatz generiert wurde, integriert. Der Werbekosten-Erstattungsbericht für den Berichtszeitraum ist damit der umfangreichste angelieferte Datensatz bezüglich des Fallbeispiels, er umfasst rund 23.800 Zeilen Text mit jeweils einer eigenen XML-Struktur, die grob in 15 Dimensionen übersetzt werden können. Die für die explorativen Analysen relevanten Dimensionen sind.
+
+Ein Auszug des Werbekosten-Erstattungsberichts ist in Abbildung 16 dargestellt.
+
+**#Abbildung 16: Auszug einer Export-Datei (XML) eines Werbekosten-Erstattungsberichts aus dem Amazon PartnerNet**
+
+## 3.3 Data Preparation
+
+Zur Datenvorbereitung sowie für alle weiteren Datenanalysen wird die frei erhältliche Software R in der Version 3.5.2 in Verbindung mit der Entwicklungsumgebung RStudio verwendet.
+
+Die angelieferten Rohdaten aus Google Analytics und dem Amazon PartnerNet sind unterschiedlich formatiert und stehen zunächst in keinem unmittelbaren Bezug zueinander. 
+
+Zunächst gilt es hierbei das Entitäts-Identifikations-Problem aufzulösen. Die Zuordnung der beiden Datensets aus dem Amazon Partnernet ist hierbei noch die leichtere Aufgabe: Zwar liegen beide Datensets in unterschiedlichen Granularitätsstufen vor - Klicks wöchentlich und Umsätze täglich - aber beide lassen sich über das Merkmal "Tracking-ID" einer jeweils einheitlichen Entität zuordnen. Eine Tracking-ID ist ein URL-Parameter, der über einen eingehenden Link mitgegeben wird und über den sich sowohl Klicks als auch Umsätze eindeutig zuordnen lassen.
+
+Allerdings sind diese Tracking-IDs in Google Analytics vollständig unbekannt. Die Zählung einzelner Seitenaufrufe erfolgt auf Ebene einzelner Seiten-URLs. Die Aufgabe besteht darin, einzelne Tracking-IDs einzelnen Seiten-URLs zuzuordnen. Um dies valide zu tun müssen zwei Annahmen erfüllt sein:
+
+1. Alle ausgehenden Affiliate-URLs einer Seiten-URL müssen mit dem identischen Tracking-ID Parameter ausgestattet sein.
+2. Jede Tracking-ID darf genau einer Seiten-URL zugeordnet sein.
+
+Beide Annahmen sind für das vorliegende Projekt grundsätzlich erfüllt und so lässt sich das Mapping von Seiten-URLs zu Tracking-IDs mithilfe eines Web-Scrapings durchführen:
+
+Hierzu wird die Seite des Gesamtprojektes mittels einer entsprechenden Sitemap initialisiert, die alle Unterseiten (Seiten-URLs) der Webseite enthalte. Ein Scraping-Algorithmus arbeitet alle in der Sitemap gelisteten URLs ab, und extrahiert den Tracking-ID-Parameter aus ausgehenden URLs. Dieser wird anschließend in eine Mapping-Tabelle geschrieben, die die Zurodnung zwischen Seiten-URLs und Tracking-IDs herstellt.
+
+Mithilfe dieser Mapping-Tabelle können nun Seitenaufrufe für eine bestimmte Seiten-URL aus Google Analytics den Klicks und Umsätzen aus Amazon Partnernet zugeordnet werden. Der Code für das Web-Scraping und Mapping lautet wie folgt:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 # 0. Preprocessing - Aufbau der Datensets ----
-
 # Match Website-URLs with Amazon Affiliate Tracking IDs
+# Scrape Website and associate URLs with Tracking ID indicated as "tag=..." in outgoing links.
 
-# Idea: Scrape Website and associate URLs with Tracking ID indicated as "tag=..." in outgoing links.
-
-##Read a Sitemap to fetch all URLs a website has for scraping
-
-if (file.exists("data/html_urls.rds")) {
+if (file.exists("data/html_urls.rds")) { 
   
-  html_urls <- read_rds("data/html_urls.rds")
+  html_urls <- read_rds("data/html_urls.rds") # (If exists, use this file and do not execute web scraping again)
 
 } else {
   
-#Folgenden Code nur ausführen, wenn kein rds vorhanden ist:
+ # Read a Sitemap to fetch all URLs a website has for scraping
 
  sitemap <- read_xml("https://www.welches-hdmi-kabel.de/sitemap.xml")
+ 
  # This sitemap is nested so we have to get all sitemaps first
-
  sitemap_urls <- sitemap %>%
    xml_children() %>%
    xml_text() %>%
@@ -348,7 +362,7 @@ if (file.exists("data/html_urls.rds")) {
 
  n = length(sitemap_urls)
 
- #We iterate through each sitemap and extract the URLs starting with https:...
+ # Iterate through each sitemap and extract the URLs starting with https:...
  for (i in 1:n ){
    html_urls <- rbind(html_urls,
    sitemap_urls[i] %>%
@@ -364,12 +378,9 @@ if (file.exists("data/html_urls.rds")) {
 }
 
 # Scrape the URLs from the sitemap for Amazon Affiliate Tag. If found, write into table and link to the resp. URL. Count the number of occurences of outgoing links per Website. 
-
-#Scrape Webseiten nach Amazon Affiliate Tag
-
 if (file.exists("data/matched_tags_to_url.rds")) {
 
-  matched_tags_to_url <- read_rds("data/matched_tags_to_url.rds")
+  matched_tags_to_url <- read_rds("data/matched_tags_to_url.rds") # Again don't execute unless file does not exist
 
 } else {
 
@@ -393,8 +404,7 @@ if (file.exists("data/matched_tags_to_url.rds")) {
      html_attr("href") %>%
      as.tibble()
 
-    if(nrow(parsed_url_links %>% filter(str_detect(value, "tag="))) > 0) {
-     #Code wird nur ausgeführt, wenn ein ausgehender Link mit Tag= auf der Webseite zu finden ist:
+    if(nrow(parsed_url_links %>% filter(str_detect(value, "tag="))) > 0) { #Code will only be executed, if outgoing link including the string "Tag=" is found on the website:
       matched_tags_to_url[j,] <-
        parsed_url_links %>%
        filter(str_detect(value, "tag=")) %>%
@@ -409,15 +419,24 @@ if (file.exists("data/matched_tags_to_url.rds")) {
  }
  rm(parsed_url_links, url, j, i, n)
  
- #Für solche Fälle, in denen eine URL einen Tag enthält, der nicht über Amazon Partnernet getrackt wird (z.B. Amazon US-Programm, entsteht ein NA. Diese hier ausschließen für weitere Analyse.)
+ # In rare cases where an URL contains a parameter which is not tracked by Amazon EU, but for example Amazon, NAs will be generated. Filter out NA's for further analysis.
  matched_tags_to_url <- matched_tags_to_url %>% 
    filter(!is.na(Tag))
 
   write_rds(matched_tags_to_url, "data/matched_tags_to_url.rds")
 
 }
+```
 
+Nach Auflösung des Entitäts-Identifikations-Problems müssen noch diverse Datenbereinigungsschritte durchgeführt werden. Dies beinhaltet diverse Formatierungen, wie beispielsweise einheitliche Datumsformate, die Aggregation auf eine einheitliche Granularitätsstufe (Kalenderwochen) und die Zusammenführung aller drei Quellen in ein einheitliches Datenset. 
 
+Einige Datenexporte enthalten Informationen zu unerwünschten Tracking-IDs, beispielsweise Tracking-IDs, die für Testprojekte oder durch externe Partner genutzt wurden. Datensätze mit Informationen zu diesen Tracking-IDs werden aus dem Gesamtdatensatz gelöscht.
+
+Des Weiteren sollen nur Umsätze analysiert werden, die nicht retourniert wurden. Entsprechend wurden alle Umsätze, die ein Rücksende-Kennzeichen haben, aus dem Werbekosten-Erstattungs-Datensatz entfernt.
+
+Der vollständige Code für die Datenaufbereitung lautet wie folgt:
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 # 1. Umsätze (Orders) von Amazon----
 fee_orders_xml <- read_xml("data/Amazon Orders 18.12.2017 - 16.12.2018/1549029224178-Fee-Orders-7a68a8a6-7342-4f73-a750-3e26a56c5147-XML.xml")
 
@@ -435,7 +454,7 @@ fee_orders_tbl <-
 
 rm(fee_orders_xml)
 
-#Aggregiere Bestellungen auf Tagesebene
+# Aggregiere Bestellungen auf Tagesebene
 fee_orders_daily_tbl <-
   fee_orders_tbl %>% 
   mutate(Datum = parse_date_time(Datum, "Ymd HMS")) %>% 
@@ -450,7 +469,6 @@ fee_orders_daily_tbl <-
 fees_weekly_tbl <- fee_orders_daily_tbl %>% 
   group_by(Tag, CW) %>%
   summarise(Umsatz = sum(Umsatz))
-
 
 # 2. Klicks auf Amazon Partnerlinks ----
 file.names <- list.files("data/Amazon Klicks 18.12.2017 - 16.12.2018/")
@@ -560,81 +578,19 @@ weekly_raw_tbl <-
 
 write_rds(weekly_raw_tbl, "data/weekly_raw_tbl.rds")
 
-```
-
-# 3.2 Data Understanding
-
-Die zur Analyse des Fallbeispiels benötigten Daten werden von zwei unterschiedlichen Quellen bereitgestellt: Besucherzahlen werden über das Tool Google Analytics erhoben, Daten zu Klicks und vermittelten Umsätzen über das Amazon PartnerNet.
-
-Die Daten aus Google Analytics werden in Form von kommagetrennten Text-Dateien (CSV) angeliefert. Google Analytics generiert pro Seiten-URL eine CSV-Datei für einen individuell einstellbaren Zeitraum. Im Fallbeispiel wurden somit XXXX unterschiedliche CSV-Dateien für jeweils den gleichen Zeitraum zwischen XX-XX-XXXX und XX-XX-XXXX generiert. Der Aufbau der CSV-Dateien ist identisch. Jede CSV-Datei enthält einen sogenannten Header-Bereich, der aggregierte Informationen und Metadaten zur aktuellen Datei anzeigt, und den eigentlichen Datenbereich, der zwei Spalten (Datum und Seitenaufrufe) zum ausgewählten Zeitraum umfasst. Ein Auszug aus der Export-CSV-Datei für die Seiten-URL http://www.welches-hdmi-kabel.de/hdmi-kabel-unterschiede/ ist in Abbildung 14 dargestellt.
-
-```{r}
-#Abbildung 14: Auszug einer Export-Datei (CSV) aus Google Analytics
-```
-
-Um Informationen zu Klicks und Umsätzen zu erhalten, müssen zwei verschiede-ne Berichte aus dem Amazon PartnerNet generiert werden. 
-
-Der sogenannte Tracking-ID-Kurzbericht enthält Informationen zur Summe der Klicks, die jeweils über die einzelnen Tracking-IDs des Partners im Berichtzeitraum generiert wurden. Die Tracking-ID-Kurzberichte werden als Tabstopp-getrennte Textdateien angeliefert und enthalten eine wöchentliche Zusammenfassung der Daten. Im Fallbeispiel ergibt dies XX Textdateien für die definierten zwölf Berichtsmonate.
-
-Die Textdateien sind identisch aufgebaut und erhalten neben den Angaben zu Klicks auch Informationen zu den in der jeweiligen Woche für die einzelnen Tracking-IDs generierten Bestellungen. Abbildung 15 zeigt einen Auszug für den Tracking-ID-Kurzbericht des Zeitraums XX-XX-XXXX bis XX-XX-XXXX.
-
-```{r}
-#Abbildung 15: Auszug einer Export-Datei (TXT) eines Tracking-ID-Kurzberichts aus dem Amazon PartnerNet
+weekly_raw_tbl %>% 
+  head(10)
 
 ```
 
-Die benötigten Informationen zu den vermittelten Umsätzen werden nicht in die Tracking-ID-Kurzberichte exportiert. Hierzu muss ein sogenannter „Werbekosten-Erstattungsbericht“ erstellt werden. Der Werbekosten-Erstattungsbericht wird in Form einer XML-Datei angeliefert, die Informationen zu allen im Berichtszeitraum vermittelten Produkten enthält, inklusive der daraus resultierenden Umsätze und Provisionen (Werbekostenerstattung). Auch sind Informationen zum jeweiligen Bestelldatum und zur jeweiligen Tracking-ID, über die der Umsatz generiert wurde, integriert. Der Werbekosten-Erstattungsbericht für den Berichtszeitraum ist damit der umfangreichste angelieferte Datensatz bezüglich des Fallbeispiels, er umfasst XX.XXXX Datenreihen mit 15 Dimensionen. Die für die explorativen Analysen relevanten Dimensionen sind: 
-
-- ASIN (Produkt-ID), 
-- Category (Produktkategorie), 
-- Date (Versanddatum), 
-- DeviceType (Mobil oder Desktop), 
-- Price (Nettopreis des Produktes), 
-- Qty. (Anzahl der bestellten Produkte), 
-- Revenue (Netto-Umsatz), 
-- Earnings (Provision) sowie
-- Tag (Tracking-ID).
 
-Ein Auszug des Werbekosten-Erstattungsberichts ist in Abbildung 16 dargestellt.
-
-```{r}
-#Abbildung 16: Auszug einer Export-Datei (XML) eines Werbekosten-Erstattungsberichts aus dem Amazon PartnerNet
-```
-
-
-# 3.3 Data Preparation
-
-Die angelieferten Rohdaten aus Google Analytics und dem Amazon PartnerNet enthalten teilweise unterschiedlich formatierte und auch unerwünschte Datensätze, die vor der Analyse bearbeitet werden müssen. 
-
-Zur Datenvorbereitung sowie für alle weiteren Datenanalysen wird die frei erhältliche Software R in der Version 3.3.1 in Verbindung mit der Entwicklungsumgebung RStudio (Version 0.99.903) verwendet.
-
-Im ersten Schritt werden mittels der Funktion gsub alle Zahlen in ein einheitliches Format in Bezug auf Tausendertrennzeichen und Kommasymbol gebracht. Anschließend werden alle Datumsfelder einheitlich im Format JJJJ-MM-TT kodiert. Zusätzlich wird per strftime-Funktion zu jedem Datum automatisch die entsprechende Kalenderwoche ergänzt.
-
-Einige Datenexporte enthalten Informationen zu unerwünschten Tracking-IDs, beispielsweise Tracking-IDs, die für Testprojekte oder durch externe Partner genutzt wurden. Datensätze mit Informationen zu diesen Tracking-IDs werden über die gsub-Funktion gelöscht.
-
-Des Weiteren sollen nur Umsätze analysiert werden, die nicht retourniert wurden. Entsprechend wurden alle Umsätze, die ein Rücksende-Kennzeichen haben, aus dem Werbekosten-Erstattungs-Datensatz entfernt.
-
-Die Datumsvorgabe des Berichtszeitraums (01.09.2015 – 31.08.2016) führt dazu, dass die Kalenderwochen am Anfang und am Ende des Berichtszeitraums unvollständig sind. Um später bei einer Analyse auf Basis von Kalenderwochen nur vollständige Kalenderwochen zu berücksichtigen, werden jeweils die erste und die letzte Kalenderwoche als unvollständig gekennzeichnet.
-
-Die im vorangegangenen Kapitel beschriebenen Daten sollen zur Auswertung und Analyse in unterschiedliche Teilmengen (Subsets) überführt werden. Aufgrund der heterogenen Struktur und der unterschiedlichen Granularität der Ursprungsdaten sind hierfür verschiedene Zwischenschritte notwendig. 
-
-Die maximale Granularität in Bezug auf das Zeitmerkmal, die von allen drei Ursprungsdatensätzen unterstützt wird, ist die Betrachtung auf Basis von Kalenderwochen. Diese soll daher für weitere Analysen als maximale Granularitätsstufe dienen. Zur Verdeutlichung werden zwei Beispiele illustriert: Die Variable $c_{st}$ bezeichnet beispielsweise die für eine bestimmte Seiten-URL (= Tracking-ID) $s$ erzielten Klicks in Kalenderwoche $t$. Der Vektor R beinhaltet die wöchentlich vermittelten Netto-Umsätze jeder einzelnen Seiten-URL im Betrachtungszeitraum.
-
-Das Zieldatenmodell für die weitere Analyse umfasst im Wesentlichen die Bildung der in Tabelle 2 aufgeführten Subsets. Einige Subsets setzen die Integration unterschiedlicher Rohdatenquellen in ein neues Datenset voraus. 
-
-Zur Lösung des Entitäts-Identifizierungsproblems dient hierbei der Abgleich der Seiten-URL aus Google Analytics mit der Tracking-ID aus dem Amazon PartnerNet. [hier detailierter]. Die vollständige Dokumentation der Bildung der Subsets ist dem dieser Arbeit beiliegenden R-Quellcode zu entnehmen.
-
-
-Hier sollte das finale Datenset beschrieben werden, dass nach Integration der Quelldaten bereitsteht. Vorher sollten die Zwischensteps (daten aus GA, Amazon 2x auch irgendwo beschrieben sein.)
-
-
-#3.4 Explorative Datenanalyse
+## 3.4 Explorative Datenanalyse
 
 Um ein allgemeines Verständnis für die Beschaffenheit und Verteilung der Daten zu bekommen, soll die allgemeine Struktur- und Häufigkeitsverteilung der Merkmale Seitenaufrufe, Klicks und Umsätze untersucht werden. Die Untersuchungen dienen dazu, Besonderheiten in der Datenverteilung zu identifizieren und diese vor weiteren Analysen ggf. zu bearbeiten. 
 
 Zunächst wird die Verteilung der kumulierten wöchentlichen Seitenaufrufe ($V$), Klicks ($C$) und Umsätze ($R$) grafisch untersucht:
 
-### Wöchentliche Seitenaufrufe über alle Seiten-URLS im Zeitverlauf
+### Entwicklung der wöchentlichen Seitenaufrufe im Zeitverlauf
 ```{r echo=FALSE}
 #Data Transformation
 weekly_raw_tbl %>% 
@@ -645,7 +601,6 @@ weekly_raw_tbl %>%
   #Visualisation
   ggplot(aes(CW, Pageviews)) +
   geom_line(group=1) +
-  ggtitle("Entwicklung der wöchentlichen Seitenaufrufe im Zeitverlauf") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   expand_limits(y=0)
@@ -656,7 +611,7 @@ Hier ist zu erkennen, dass die Seitenaufrufe im Verlauf des Jahres 2018 zunächs
 
 Die hohen Seitenaufrufe in den Wintermonaten könnten ein Indikator für das in diesem Zeitraum anlaufende Weihnachtsgeschäft sein. Die Weihnachtsfeiertage liegen in der Regel in KW51 - KW52. 
 
-### Wöchentliche Klicks über alle Seiten-URLS im Zeitverlauf
+### Entwicklung der wöchentlichen Klicks im Zeitverlauf
 ```{r echo=FALSE}
 #Data Transformation
 weekly_raw_tbl %>% 
@@ -667,7 +622,6 @@ weekly_raw_tbl %>%
   #Visualisation
   ggplot(aes(CW, Klicks)) +
   geom_line(group=1) +
-  ggtitle("Entwicklung der wöchentlichen Klicks im Zeitverlauf") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   expand_limits(y=0)
@@ -675,7 +629,7 @@ weekly_raw_tbl %>%
 ```
 Die Entwicklung der kumulierten Klicks je Kalenderwoche ähnelt der Entwicklung der Seitenaufrufe sehr stark. Hier wird ebenfalls das Maximum in KW 52 erreicht. Die Darstellung ist insofern bezüglich der Abbildung der Seitenaufrufe plausibel, als dass ohne Seitenaufrufe keine Klicks generiert werden können.
 
-### Wöchentliche Umsätze über alle Seiten-URLS im Zeitverlauf
+### Entwicklung der wöchentlichen Umsätze im Zeitverlauf
 ```{r echo=FALSE}
 #Data Transformation
 weekly_raw_tbl %>% 
@@ -686,7 +640,6 @@ weekly_raw_tbl %>%
   #Visualisation
   ggplot(aes(CW, Umsatz)) +
   geom_line(group=1) +
-  ggtitle("Entwicklung der wöchentlichen Umsätze im Zeitverlauf") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   expand_limits(y=0)
@@ -696,7 +649,7 @@ Die wöchentliche Umsatzentwicklung im Zeitverlauf zeigt einen wesentlichen Unte
 
 Zur genaueren Untersuchung werden Seitenaufrufe, Klicks und Umsätze in einem Chart dargestellt:
 
-### Wöchentliche Seitenaufrufe, Klicks und Umsätze über alle Seiten-URLS im Zeitverlauf
+### Entwicklung der wöchentlichen Seitenaufrufe, Klicks und Umsätze im Zeitverlauf
 ```{r echo=FALSE}
 weekly_raw_tbl %>% 
   select(CW, Pageviews, Klicks, Umsatz) %>% 
@@ -714,12 +667,12 @@ weekly_raw_tbl %>%
   #Visualisation
   ggplot(aes(x=CW, y=Wert, color=Kriterium)) +
   geom_line(aes(group = Kriterium), size = 1.1) +
-  ggtitle("Entwicklung der wöchentlichen Seitenaufrufe, Klicks und Umsätze im Zeitverlauf") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1),
         legend.position = "bottom") +
   expand_limits(y=0)
 ```
+
 Aus dieser Betrachtung ergeben sich zwei zentrale Erkenntnisse: Einerseits korrelieren alle drei Werte miteinander. Seitenaufrufe und Klicks korrelieren sehr stark, der Umsatz im Vergleich dazu weniger. Die Umsatzkurze zeigt immer wieder Ausreißer nach oben, die in den Seitenaufrufen und Klicks nicht auftauchen.
 
 Der Grund hierfür liegt vor allem in der Berechnungssystematik der Umsätze durch den Merchant Amazon. Als Umsätze werden grundsätzlich nur Waren gezählt, die tatsächlich an den Besteller verschickt wurden. An Sonntagen findet generell (mit der Ausnahme von digitalen Gütern) kein Versand statt. Die Abweichung zwischen Bestell- (Klick) und Versanddatum (Umsatz) kann somit durchaus ein bis zwei Tage umfassen und damit in unterschiedliche Kalenderwochen fallen, was in der folgenden Abbildung deutlich wird.
@@ -753,11 +706,12 @@ left_join(a, b, by="Wochentag") %>%
   geom_bar(position="dodge", stat="identity")
   
 ```
+
 Die Abbildung zeigt, dass Umsätze am stärksten Montags generiert werden, wohingegen Seitenaufre vermehrt am Wochenende stattfinden. Der hohe Umsatz an Montagen ist jedoch vor allem auch auf die Bestellungen an Wochenende zurückzuführen, die Montags versand werden.
 
-# 3.5 Analyse der Klickraten
+## 3.5 Analyse der Klickraten
 
-# 3.5.1 Analyse der CTR-Verteilung
+## 3.5.1 Analyse der CTR-Verteilung
 
 Zur Analyse der ersten Konversionsebene soll das Klickverhalten in Bezug auf die Seitenaufrufe untersucht werden (Click-Through-Rate). 
 
@@ -772,6 +726,7 @@ clicks_weekly_tbl %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
   
 ```
+
 Durch diese Grafik wird deutlich, dass ein paar wenige Seiten-URLs die meisten Klicks absolut generieren. Dementsprechend weist die Verteilung einen Tail auf, der viele URLs umfasst, aber in Summe wenig Klicks generiert. Diese Erkenntnis ist für die spätere Benchmark-Modellierung relevant und muss entsprechend berücksichtigt werden.
 
 Um weitere Aussagen über die Performance der CTR treffen zu können, muss zunächst analysiert werden, inwiefern überhaupt eine Varianz innerhalb der Daten vorliegt.
@@ -784,6 +739,7 @@ weekly_raw_tbl %>%
   ggplot(aes(x=CTR)) +
   geom_histogram(binwidth = 0.1)
 ```
+
 Betrachtet man diese ungefilterte Darstellung werden vor allem zwei Dinge deutlich: Erstens gibt es sehr viele Beobachtungen, bei denen die CTR 0 ist. Andererseits gibt eineige extreme Ausreißer nach oben mit bis zu 8 Klicks pro Seitenaufruf.
 
 Beide Extremfälle sind für die Ableitung von Benchmarks wenig hilfreich. Daher wird die Verteilung unter der Bedingung analysiert, dass eine Seiten-URL innerhalb einer Woche mindestens 10 Aufrufe pro Tag, das heißt 70 Aufrufe pro Woche erreicht hat. Unterhalb dieser Grenze sind keine Verlässlichen Aussagen möglich.
@@ -798,9 +754,11 @@ weekly_raw_tbl %>%
   geom_histogram(binwidth = 0.01) + 
   geom_vline(aes(xintercept=CTR_mean))
 ```
+
 Berücksichtigt man diese Bedingung, ergibt sich ein etwas aussagelkräftigeres Bild. Zum einen existiert eine relativ starke Varianz, das heißt die CTR streut relativ breit um den Mittelwert `r round(CTR_mean, 2)`. Offensichtlich ist der Mittelwert zudem kein optimales Lagemaß, da die Daten nicht normal verteilt sind.
 
 Schwankt die CTR in Abhängigkeit von der Zeit? Diese Frage beantwortet folgende Abbildung:
+
 ```{r echo=FALSE}
 weekly_raw_tbl %>%
   filter(Pageviews >= 70) %>% 
@@ -810,9 +768,11 @@ weekly_raw_tbl %>%
   geom_hline(yintercept = CTR_mean) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
-Das Ergebnis: Nein, der CTR-Mittelwert pro Kalenderwoche ist über den Zeitverlauf gesehen relativ konstant. Hier scheint kein belastbares Muster vorzuliegen.
+
+Das Ergebnis: Der CTR-Mittelwert pro Kalenderwoche ist über den Zeitverlauf gesehen relativ konstant. Hier scheint kein belastbares Muster vorzuliegen.
 
 Schwankt die CTR nach Seiten-URL, performen also manche Seiten besser als andere?
+
 ```{r echo=FALSE, warning=TRUE}
 tag_id_order <- weekly_raw_tbl %>%
   filter(Pageviews >= 70) %>%
@@ -835,22 +795,25 @@ weekly_raw_tbl %>%
   geom_hline(yintercept = CTR_mean) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
+
 Die Erkenntnis: Ja, die CTR variiert sehr stark nach Seiten-URL. Der geringste CTR-Median pro Seiten-URL liegt bei 0,01 und der höchste bei 0,4. Die Sortierung der Seiten-URLs auf der X-Achse erfolgt hier anhand der jeweiligen absoluten Seitenaufrufe in absteigender Reihenfolge. Zwei der Top-5-URLs weisen katastrophale CTR-Werte auf.
 
 Abschließen soll betrachtet werden, inwiefern die CTR im Vergleich zu den absoluten Seitenaufrufen schwankt. Bleibt die CTR auch bei steigenden Seitenaufrufen konstant? Zur Verdeutlichung wird der direkte Zusammenhang zwischen Klicks und Seitenaufrufen visualisiert. Bliebe die CTR jeweils konstant, müsste die Verteilung durch eine einfache Regressionsgerade modelliert werden können.
 
+### Verhältnis von Seitenaufrufen zu Klicks, absolut"
 ```{r echo=FALSE}
 weekly_raw_tbl %>%
   filter(Pageviews >= 70) %>% 
   select(Klicks, Pageviews) %>%
   ggplot(aes(y=Klicks, x=Pageviews)) +
-  geom_point() +
-  ggtitle("Verhältnis von Seitenaufrufen zu Klicks, absolut")
+  geom_point()
 ```
+
 Die Erkenntnis: Gunrdsätzlich existiert tatsächlich ein linearer Zusammenhang zwischen den Variablen, je mehr Pageviews, desto mehr Klicks. Allerdings scheinen hier mindestens 2 Gruppen von Daten zu existieren, einige mit besserer und einige mit schlechterer Performance.
 
 Das Ziel der Analyse ist es, einen geeigneten Benchmark für die Kennzahl CTR abzuleiten. Aus diesem Grund soll die Datengruppe mit schlechterer Performance gezielt ausgeschlossen werden. Um diese Daten mit schlechter Performance zu markieren, soll eine Clusteranalyse durchgeführt werden.  
 
+### Cluster-Analyse: Auflösung der zwei Sub-Gruppen
 ```{r echo=FALSE}
 ctr_df <- weekly_raw_tbl %>%
   filter(Pageviews > 70) %>% 
@@ -867,13 +830,14 @@ ctr_df <- ctr_df %>%
 
 ctr_df %>% 
   ggplot(aes(x=Pageviews, y=Klicks, color=Cluster)) +
-  geom_point() +
-  ggtitle("Cluster-Analyse: Auflösung der zwei Sub-Gruppen")
+  geom_point()
 ```
+
 Als Clusteralgorithmus wird k-Means verwendet. Als Zielclusterannahme wird k = 10 definiert, was sich nach einigen Versuchen als guter Kompromiss zwischen Clusteranzahl und Clusterähnlichkeit herausstellte.
 
 Nun ist es ein leichtes, die durchschnittliche CTR pro Cluster zu berechnen und die Cluster mit den jeweils geringsten CTR-Medianen als Low-Performer zu markieren.
 
+### CTR Verteilung über die Cluster
 ```{r echo=FALSE}
 median_ctr <- median(ctr_df$CTR)
 
@@ -881,10 +845,11 @@ ctr_df %>%
   ggplot(aes(x=Cluster, y=CTR)) +
   geom_boxplot() +
   geom_hline(yintercept = median_ctr) +
-  coord_cartesian(ylim = c(0,1)) +
-  ggtitle("CTR Verteilung über die Cluster")
+  coord_cartesian(ylim = c(0,1))
 ```
+
 Es sollen nur solche Cluster in die Benchmarkmodellierung einfließen, deren Cluster-Median mindestens die Hälfte des gesamten Medians beträgt. Folgende Cluster bleiben so übrig: 
+
 ```{r echo=FALSE}
 #Cluster aussortieren, die deutlich vom CTR-Median entfernt liegen.
 clusters_perform <- ctr_df %>% 
@@ -906,13 +871,15 @@ print(clusters_perform)
 ```
 
 Beschränkt man die Verteilung von Seitenaufrufen zu Klicks nun auf die verbliebenen Cluster, ergibt sich folgendes Bild:
+
+### Verhältnis von Seitenaufrufen zu Klicks, absolut, nach Bereinigung
 ```{r echo=FALSE}
 ctr_df %>% 
   filter(Cluster %in% clusters_perform) %>% 
   ggplot(aes(x=Pageviews, y=Klicks, color=Cluster)) +
-  geom_point() +
-  ggtitle("Verhältnis von Seitenaufrufen zu Klicks, absolut, nach Bereinigung")
+  geom_point()
 ```
+
 Diese Verteilung lässt sich nun gut mittels einer Regression modellieren, wobei Seitenaufrufe (Pageviews) als Input- und Klicks als Output-Variable gelten.
 
 Da die Variablen Klicks und Pageviews wie oben gezeigt nicht normalverteilt sind, muss diese Annahme zunächst hergestellt werden. In dem vorliegenden Fall geschieht dies über eine Log-Transformation:
@@ -932,9 +899,10 @@ ctr_modelling_df %>%
   geom_histogram(binwidth = .5) +
   facet_grid(.~Variable)
 ```
+
 Beide Variablen nähern sich nun deutlich besser einer Normalverteilung an. Die abgeschnitten wirkende Verteilung der logViews resultiert aus der Vorbedingung, dass in der Modellierung nur Seiten-URLs mit mindestens 70 Aufrufen pro Woche betrachtet wurden.
 
-# 3.5.2 Regressionsmodellierung zur Vorhersage der Klicks in Abhängigkeit von Seitenaufrufen
+## 3.5.2 Regressionsmodellierung zur Vorhersage der Klicks in Abhängigkeit von Seitenaufrufen
 
 ```{r echo=TRUE}
 #Temporäres Modell zur Ausreißererkennung in den Reisduen
@@ -957,6 +925,7 @@ Das neue Modell nach Ausreißeranalyse trifft die Daten mit einem $R^2$ von `r r
 ```{r echo=FALSE}
 plot(clicks_lm_2, which=1)
 ```
+
 Das Ergebnis: Das Modell trifft bei besonders kleinen prognostizierten Klicks die Daten noch nicht besonders gut. Dies dürfte darin begründet sein, dass mit der initialen Annahme von 70 Seitenaufrufen, eine Menge Zugriffe mit sehr wenig Traffic herausgefiltert wurde, aber gleichzeitig immer noch sehr viele Beobachtungen auftauchen, die wenig bis gar keine Klicks zeigen. 
 
 In den Performance-Cluster beträgt der Median-CTR, dass im Duchschnitt pro Seitenaufruf mindestens `r round(median_ctr_performance,2)` Klicks generiert werden sollten, bedeutet das für 70 Seitenaufufe pro Woche mindestens `r round(median_ctr_performance * 70,0)` Klicks absolut. Das Modellierungs-Datenset soll daher auch auf diese Anzahl von Minimum-Klicks beschränkt werden:
@@ -991,6 +960,7 @@ print(summary(clicks_lm_4))
 
 plot(clicks_lm_4, which=1)
 ```
+
 Das Modell ClicksLM_4 verbessert sich durch diesen zusätzlichen Constraint auf einen $R^2$ von `r round(summary(clicks_lm_4)$r.squared,2)` und weist gleichzeitig eine besser normalverteile Darstellung der Residuen auf. Der hohe Wert des Shapiro-Wilk-Test auf Normalverteilung der Residuen bestätigt diese Annahme:
 
 ```{r echo=TRUE}
@@ -1023,24 +993,24 @@ weekly_raw_tbl %>%
 ```
 
 
-# 3.5.3 Analyse der RPC-Verteilung
+## 3.5.3 Analyse der RPC-Verteilung
 In der zweiten Konversionsebene soll die Kenngröße Umsatz in Bezug auf das Klickverhalten analysiert werden, um so nähere Erkenntise über die Benchmarkgröße RPC (Revenue-Per-Click) zu gewinnen. 
 
 Da die Abfolge der Analyse im Wesentlichen identisch zur CTR-Betrachtung ist, werden die Auswertungen etwas kompakter zusammengefasst.
 
 Auch für die Kenngröße RPC ist es zunächst hilfreich, die Verteilung der Umsätze über den gesammten Datensatz zu betrachten. Die folgenden Abbildungen zeigen die Verteilung der Umsätze über die Einzelnen Seiten-URLs, sowie die Verteilung der Kennzahl RPC allgemein, im Zeitverlauf und über einzelne Seiten-URLs.
 
-
+### Verteilung von Umsätzen über Seiten-URLs
 ```{r echo=FALSE}
 weekly_raw_tbl %>% 
   ungroup %>% 
   mutate(Tag=fct_reorder(Tag, Umsatz, .desc = T)) %>% 
   ggplot(aes(x=Tag, y= Umsatz)) +
   geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  ggtitle("Verteilung von Umsätzen über Seiten-URLs")
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
   
 ```
+
 Auch hier lässt sich wieder erkennen, dass nur eine wenige Anzahl von Seiten-URLs die meisten Umsätze generiert.
 
 ```{r echo=FALSE}
@@ -1051,6 +1021,7 @@ weekly_raw_tbl %>%
 
 weekly_clicks_min <- round(median_ctr_performance * 70,0)
 ```
+
 Entsprehendes schlägt sich auch in der Betrachtung der Verteilung der RPC im gesamten Datenset nieder. Auch hier soll wieder ein Mindestwert definiert werden, in diesem Fall analog zur vorherigen Betrachtung die Baseline von `r weekly_clicks_min` Klicks pro Woche.
 
 ```{r echo=FALSE}
@@ -1065,6 +1036,8 @@ weekly_raw_tbl %>%
 ```
 
 Im Folgenden wird die Schwankung der Kenngröße RPC in Abhängigkeit von Zeit und Seiten-URL untersucht:
+
+### RPC im Wochenverlauf
 ```{r echo=FALSE}
 weekly_raw_tbl %>%
   filter(Klicks >= weekly_clicks_min) %>% 
@@ -1072,9 +1045,9 @@ weekly_raw_tbl %>%
   ggplot(aes(y=RPC, x=CW)) +
   geom_boxplot() +
   geom_hline(yintercept = RPC_mean) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  ggtitle("RPC im Wochenverlauf")
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
+
 ```{r echo=FALSE}
 tag_id_order <- weekly_raw_tbl %>%
   filter(Klicks >= weekly_clicks_min) %>%
@@ -1096,19 +1069,22 @@ weekly_raw_tbl %>%
   geom_hline(yintercept = RPC_mean) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
+
 Ähnlich wie bereits bei der CTR-Analyse wird deutlich, dass die Verteilung der Umsätze stärker über die einzelnen Seiten-URLs schwankt als über die Zeit, was bedeutet, dass die Seiten-URL ein größerer Einflussfaktor auf die Performance des RPC-Benchmarks zu sein scheint. Gleichzeitig gibt es auch mehr Ausreißer, sowohl über Seiten-URLs als auch über die Zeitdimension verteilt.
 
+### Verhältnis von Klicks zu Umsätzen, absolut
 ```{r echo=FALSE}
 weekly_raw_tbl %>%
   filter(Klicks >= weekly_clicks_min) %>% 
   select(Umsatz, Klicks) %>%
   ggplot(aes(y=Umsatz, x=Klicks)) +
-  geom_point() +
-  ggtitle("Verhältnis von Klicks zu Umsätzen, absolut")
+  geom_point()
 ```
+
 Die Erkenntnis: Aufgrund der vielen Ausreißer, ist der lineare Zusammenhang hier nicht so offensichtlich wie bei der Analyse der Seitenaufrufe und Klicks. Zur Ableitung der Benchmarks ist also die entsprechende Bereinigung der Daten entscheidend. Auch hier sollen zunächst mithilfe einer Clusteranalyse gut performende und schlecht performende Punkte getrennt werden.
 
 An dieser Stelle wird ein hierarchischer Clusteralgorithmus verwendet, um die Strukturen innerhalb der Daten besser erkenntlich zu machen.
+
 ```{r echo=TRUE}
 rpc_hclust <- weekly_raw_tbl %>% 
   filter(Klicks >= weekly_clicks_min) %>% 
@@ -1155,17 +1131,19 @@ rpc_df %>%
   ggplot(aes(x=Klicks, y=Umsatz, color=Cluster)) +
   geom_point()
 ```
+
 Nun werden die RPC-Mediane der einzelnen Cluster analysiert und High-Performer markiert:
 
+### RPC Verteilung über die Cluster
 ```{r echo=FALSE}
 median_rpc <- median(rpc_df$RPC)
 
 rpc_df %>% 
   ggplot(aes(x=Cluster, y=RPC)) +
   geom_boxplot() +
-  geom_hline(yintercept = median_rpc) +
-  ggtitle("RPC Verteilung über die Cluster")
+  geom_hline(yintercept = median_rpc)
 ```
+
 Nach Einschränkung auf die High Performance Cluster, die hier durch einen Median von mindesten 70% des Gesamt-Medians definiert werden, ergibt sich folgendes Bild:
 
 ```{r echo=FALSE}
@@ -1188,15 +1166,15 @@ median_rpc_performance <-
 print(clusters_perform_rpc)
 ```
 
+### Verhältnis von Klicks zu Umsatz, absolut, nach Bereinigung
 ```{r echo=FALSE}
 rpc_df %>% 
   filter(Cluster %in% clusters_perform_rpc) %>% 
   ggplot(aes(x=Klicks, y=Umsatz, color=Cluster)) +
-  geom_point() +
-  ggtitle("Verhältnis von Klicks zu Umsatz, absolut, nach Bereinigung")
+  geom_point()
 ```
 
-# 3.5.4 Regressionsmodellierung zur Vorhersage der Klicks in Abhängigkeit von Seitenaufrufen
+## 3.5.4 Regressionsmodellierung zur Vorhersage der Klicks in Abhängigkeit von Seitenaufrufen
 
 Der Aufbau des entsprechenden Regressionsmodells erfolgt analog zur CTR-Analyse mit folgendem Skript:
 
@@ -1230,6 +1208,7 @@ print(summary(revenue_lm_2))
 
 plot(revenue_lm_2, which=1)
 ```
+
 Das Modell Revenue_LM_2 erreicht einen $R^2$ von `r round(summary(revenue_lm_2)$r.squared,2)` und weist gleichzeitig eine akzeptable Residuenverteilung auf. Der Shapiro-Wilk-Test auf Normalverteilung unterstreicht die Normalverteilungsannahme ebenfalls:
 
 ```{r echo=TRUE}
@@ -1262,7 +1241,8 @@ weekly_raw_tbl %>%
 ```
 
 
-# 3.6 Deployment: Aufbau des Scoring-Widgets
+## 3.6 Deployment: Aufbau des Scoring-Widgets
+
 Mit den nun neu gewonnen Informationenn über Definition und Erreichung eines Benchmarks für einen bestimmten Datenpunkt in einer Kalenderwoche lassen sich als Seitenbetreiber gewinnbringende Erkenntnisse ableiten.
 
 Noch einmal zum Hintergrund: Als Seitenbetreiber mit Affiliate-Ansatz stehen im Prinzip vier grobe Strategien zur Verfügung, um die Umsätze einer Seite zu erhöhen:
@@ -1296,6 +1276,7 @@ scores_df %>%
 ```
 
 Wie eingangs erwähnt lassen sich diese Berechnungen nutzen, um daraus strategische Handlungsempfehlungen abzuleiten. Diese entstehen, indem bestimmte Score-Erreichungen bestimmten Handlungsfeldern zugewiesen werden:
+
 ```{r echo=TRUE}
 scores_df <-scores_df %>% 
   mutate(Handlungsfeld = case_when(
@@ -1308,13 +1289,12 @@ scores_df <-scores_df %>%
 
 Zur besseren Veranschaulichung lassen sich diese Scores in einer Handlungsfeldmatrix darstellen:
 
-Scoring Widget
+### Scoring Widget
 ```{r echo=TRUE}
 scores_df %>% 
   ggplot(aes(x=Score_CTR, y=Score_RPC, color=Handlungsfeld, size=Pageviews_Gesamt)) +
   geom_point(alpha = .7) +
   scale_size_continuous(range = c(1,10)) +
-  ggtitle("CTR-RPC-Scoring Widget") +
   xlab("CTR Score") +
   ylab("RPC Score") +
   geom_hline(yintercept = .5, color="grey") +
