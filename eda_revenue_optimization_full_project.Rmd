@@ -4,11 +4,14 @@ title: Anwendung explorativer Datenanalyse zur Identifikation von Optimierungspo
 author: "Tobias Zwingmann"
 date: "30 4 2019"
 output:
+  html_document:
+    df_print: paged
+    toc: yes
+  pdf_document:
+    toc: yes
   word_document:
     fig_height: 7
     fig_width: 7
-    toc: yes
-  pdf_document:
     toc: yes
 ---
 
