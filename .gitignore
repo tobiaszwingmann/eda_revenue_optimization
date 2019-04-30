@@ -8,3 +8,5 @@ data/Google*
 data/.gitignore
 data/html_urls.rds
 data/pageviews_tbl.rds
+*_files/
+data/*
